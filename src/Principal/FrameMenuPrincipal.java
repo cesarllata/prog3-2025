@@ -8,7 +8,7 @@ import LogIn.RegisterDialog;
 
 public class FrameMenuPrincipal extends JFrame {
     /**
-	 * 
+	 * prueba
 	 */
 	private static final long serialVersionUID = 1L;
 	private boolean isLoggedIn = false;
