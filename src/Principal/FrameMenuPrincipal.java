@@ -4,11 +4,14 @@ import java.awt.*;
 import javax.swing.*;
 import LogIn.LoginDialog;
 import LogIn.RegisterDialog;
-import Principal.NuevoViajeDialog;
-import Principal.BonosAlsaDialog;
+
 
 public class FrameMenuPrincipal extends JFrame {
-    private boolean isLoggedIn = false;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private boolean isLoggedIn = false;
     private String currentUser = "";
 
     private JButton botonLogIn;
