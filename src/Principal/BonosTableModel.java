@@ -1,0 +1,78 @@
+package Principal;
+
+import javax.swing.table.AbstractTableModel;
+import java.util.List;
+
+public class BonosTableModel extends AbstractTableModel {
+
+    private List<Bono> bonos;
+    private final String[] columnNames = {"ID","Nombre del Bono", "Validez", "Vigencia","Precio (€)"};
+
+    public BonosTableModel(List<Bono> bonos) {
+        this.bonos = bonos;
+    }
+
+    @Override
+    public int getRowCount() {
+        return bonos.size();
+    }
+
+    @Override
+    public int getColumnCount() {
+        return columnNames.length;
+    }
+
+    @Override
+    public String getColumnName(int column) {
+        return columnNames[column];
+    }
+
+    @Override
+    public Class<?> getColumnClass(int columnIndex) {
+        switch (columnIndex) {
+            case 0:
+            case 1:
+                return Integer.class;
+            case 2:
+                return String.class;
+            case 3:
+                return String.class;
+            case 4:
+                return Double.class;
+            default:
+                return Object.class;
+        }
+    }
+
+    @Override
+    public Object getValueAt(int rowIndex, int columnIndex) {
+        Bono bono = bonos.get(rowIndex);
+        switch (columnIndex) {
+            case 0:
+                return bono.getId();
+            case 1:
+                return bono.getNombre();
+            case 2:
+                return bono.getValidez();
+            case 3:
+                return bono.getVigencia();
+            case 4:
+                return bono.getPrecio();
+            default:
+                return null;
+        }
+    }
+
+    @Override
+    public boolean isCellEditable(int rowIndex, int columnIndex) {
+        return false;
+    }
+
+    // --- MÉTODO NUEVO ---
+    /**
+     * Devuelve el objeto Bono completo para una fila específica del modelo.
+     */
+    public Bono getBonoAt(int rowIndex) {
+        return bonos.get(rowIndex);
+    }
+}
