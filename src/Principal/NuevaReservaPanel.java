@@ -7,19 +7,29 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 
 public class NuevaReservaPanel extends JPanel {
-
+    private MainFrame mainFrame;
     private final GestorRutas gestor;
     private final JComboBox<String> cbOrigen;
     private final JComboBox<String> cbDestino;
     private final DefaultComboBoxModel<String> modeloDestino;
     private final JLabel lblInfo;
 
+    // Añadido: constructor sin args para evitar "constructor undefined"
     public NuevaReservaPanel() {
+        this(null);
+    }
+
+    public NuevaReservaPanel(MainFrame mainFrame) {
+        this.mainFrame = mainFrame;
         gestor = new GestorRutas();
         gestor.cargarDesdeFichero("rutas.txt");
 
-        setLayout(new GridBagLayout());
-        setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
+        setLayout(new BorderLayout());
+        setBackground(Color.WHITE);
+
+        JPanel centerPanel = new JPanel();
+        centerPanel.setLayout(new GridBagLayout());
+        centerPanel.setOpaque(false);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(12,12,12,12);
 
@@ -44,22 +54,59 @@ public class NuevaReservaPanel extends JPanel {
 
         // ---------- LAYOUT ----------
         gbc.gridx = 0; gbc.gridy = 0;
-        add(new JLabel("Origen:", SwingConstants.RIGHT), gbc);
+        centerPanel.add(new JLabel("Origen:", SwingConstants.RIGHT), gbc);
 
         gbc.gridx = 1;
-        add(cbOrigen, gbc);
+        centerPanel.add(cbOrigen, gbc);
 
         gbc.gridx = 0; gbc.gridy = 1;
-        add(new JLabel("Destino:"), gbc);
+        centerPanel.add(new JLabel("Destino:"), gbc);
 
         gbc.gridx = 1;
-        add(cbDestino, gbc);
+        centerPanel.add(cbDestino, gbc);
 
         gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 2;
-        add(lblInfo, gbc);
+        centerPanel.add(lblInfo, gbc);
 
         gbc.gridy = 3;
-        add(btnReservar, gbc);
+        centerPanel.add(btnReservar, gbc);
+
+        add(centerPanel, BorderLayout.CENTER);
+
+        // ---- Reemplazado: barra superior con botón atrás visible y funcional ----
+        JPanel topBar = new JPanel(new BorderLayout());
+        topBar.setOpaque(false);
+
+        JButton backBtn = new JButton("← Volver");
+        backBtn.setToolTipText("Volver al menú principal");
+        backBtn.setFont(new Font("Arial", Font.PLAIN, 19));
+        backBtn.setFocusPainted(false);
+
+        // Mostrar como botón (fondo y borde)
+        backBtn.setOpaque(true);
+        backBtn.setContentAreaFilled(true);
+        backBtn.setBackground(new Color(230, 230, 230));
+        backBtn.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.GRAY),
+                BorderFactory.createEmptyBorder(6, 10, 6, 10)
+        ));
+
+        backBtn.addActionListener(e -> {
+            // intentar usar el mainFrame pasado en el constructor
+            if (this.mainFrame != null) {
+                this.mainFrame.mostrarPanel("MENU");
+                return;
+            }
+            // si mainFrame es null, buscar la ventana contenedora y castear a MainFrame
+            java.awt.Window w = javax.swing.SwingUtilities.getWindowAncestor(this);
+            if (w instanceof MainFrame) {
+                ((MainFrame) w).mostrarPanel("MENU");
+            }
+        });
+
+        topBar.add(backBtn, BorderLayout.WEST);
+        add(topBar, BorderLayout.NORTH);
+        // -------------------------------------------------
 
         // Primer despliegue
         if (cbOrigen.getItemCount() > 0)
