@@ -1,14 +1,47 @@
 package Principal;
 
 
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.*;
+import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
 
-public class GestorRutas {
+public class GestorRutas extends JPanel {
+    private MainFrame mainFrame;
+
+    // Añadir (ejemplo): lista de objetos Segmento
+    private List<Segmento> segmentos = new ArrayList<>();
 
     private final Map<String, Ruta> rutasPorId = new LinkedHashMap<>();
     private final Map<String, Set<String>> rutasPorParada = new HashMap<>();
+
+    // Constructor sin args por compatibilidad con quien llame sin pasar MainFrame
+    public GestorRutas() {
+        this(null);
+    }
+
+    public GestorRutas(MainFrame mainFrame) {
+        this.mainFrame = mainFrame;
+        initUI();
+    }
+
+    private void initUI() {
+        // Asegurar layout para colocar la barra superior
+        setLayout(new BorderLayout());
+        setBackground(Color.WHITE);
+
+        // Barra superior con botón atrás
+        JPanel topBar = new JPanel(new BorderLayout());
+        topBar.setOpaque(false);
+        topBar.add(createBackButton(), BorderLayout.WEST);
+        add(topBar, BorderLayout.NORTH);
+
+        // Aquí va el resto del contenido del panel (centro, tablas, formularios, etc.)
+        // add(..., BorderLayout.CENTER);
+    }
 
     public void cargarDesdeFichero(String fichero) {
         rutasPorId.clear();
@@ -75,6 +108,35 @@ public class GestorRutas {
 
         res.sort(Comparator.comparingInt(OpcionDestino::getMinutos));
         return res;
+    }
+
+    // Helper reutilizable para estilo y comportamiento del botón
+    private JButton createBackButton() {
+        JButton backBtn = new JButton("← Volver");
+        backBtn.setToolTipText("Volver al menú principal");
+        backBtn.setFont(new Font("Arial", Font.PLAIN, 14));
+        backBtn.setFocusPainted(false);
+
+        // Mostrar claramente como botón
+        backBtn.setOpaque(true);
+        backBtn.setContentAreaFilled(true);
+        backBtn.setBackground(new Color(230, 230, 230));
+        backBtn.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.GRAY),
+                BorderFactory.createEmptyBorder(6, 10, 6, 10)
+        ));
+
+        backBtn.addActionListener(e -> {
+            if (this.mainFrame != null) {
+                this.mainFrame.mostrarPanel("MENU");
+                return;
+            }
+            java.awt.Window w = SwingUtilities.getWindowAncestor(this);
+            if (w instanceof MainFrame) {
+                ((MainFrame) w).mostrarPanel("MENU");
+            }
+        });
+        return backBtn;
     }
 
     // ---------- MODELOS ----------
