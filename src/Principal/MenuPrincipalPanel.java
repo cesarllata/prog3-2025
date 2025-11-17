@@ -17,7 +17,7 @@ public class MenuPrincipalPanel extends JPanel {
         JPanel botonesPanel = new JPanel(new GridLayout(3, 1, 15, 15));
         botonesPanel.setOpaque(false);
 
-        // Carga de imágenes (ruta vacía por defecto; reemplazar por rutas reales si las hay)
+        // Carga de imágenes (lo he puesto por si ponemos imagenes en los botones en un futuro pero ahora mismo queda mejor en blanco)
         ImageIcon imgReserva = new ImageIcon("");
         ImageIcon imgRutas   = new ImageIcon("");
         ImageIcon imgBonos   = new ImageIcon("");

@@ -129,7 +129,7 @@ public class GestorRutas extends JPanel {
             g2.translate(offsetX, offsetY);
             g2.scale(escala, escala);
 
-            // 1. DIBUJAR CONEXIONES (Fondo)
+            // 1. DIBUJAR CONEXIONES 
             g2.setStroke(new BasicStroke(4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 
             for (Ruta ruta : rutasPorId.values()) {
@@ -143,7 +143,7 @@ public class GestorRutas extends JPanel {
                 }
             }
 
-            // 2. DIBUJAR CIUDADES Y ETIQUETAS (Frente)
+            // 2. DIBUJAR CIUDADES Y ETIQUETAS 
             for (Map.Entry<String, Point> entry : coordenadas.entrySet()) {
                 String ciudad = entry.getKey();
                 Point p = entry.getValue();

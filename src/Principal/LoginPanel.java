@@ -13,7 +13,7 @@ public class LoginPanel extends JPanel {
         setLayout(new GridBagLayout());
         setBackground(new Color(240, 248, 255)); // Fondo suave general
 
-        // --- Panel Tarjeta (El recuadro blanco) ---
+        
         JPanel cardPanel = new JPanel();
         cardPanel.setLayout(new BoxLayout(cardPanel, BoxLayout.Y_AXIS));
         cardPanel.setBackground(Color.WHITE);

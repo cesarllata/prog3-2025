@@ -1,5 +1,5 @@
 package Principal;
-
+//uso de IAG para mejorar la estetica
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
@@ -10,7 +10,7 @@ import java.util.List; // Importante
 
 public class NuevaReservaPanel extends JPanel {
     private MainFrame mainFrame;
-    private final GestorRutas gestor; // Usamos el gestor para calcular, aunque ahora sea visual
+    private final GestorRutas gestor; 
     
     // Componentes de selección
     private final JComboBox<String> cbOrigen;

@@ -18,7 +18,7 @@ public class MainFrame extends JFrame {
         
         // --- CAMBIO IMPORTANTE: Cierre directo al pulsar la X ---
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
-        // Hemos eliminado el addWindowListener que llamaba a solicitarSalir()
+        
 
         setSize(900, 700);
         setLocationRelativeTo(null);
