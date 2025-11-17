@@ -1,123 +1,207 @@
 package Principal;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.util.List; // Importante
 
 public class NuevaReservaPanel extends JPanel {
     private MainFrame mainFrame;
-    private final GestorRutas gestor;
+    private final GestorRutas gestor; // Usamos el gestor para calcular, aunque ahora sea visual
+    
+    // Componentes de selección
     private final JComboBox<String> cbOrigen;
     private final JComboBox<String> cbDestino;
     private final DefaultComboBoxModel<String> modeloDestino;
-    private final JLabel lblInfo;
 
-    // Añadido: constructor sin args para evitar "constructor undefined"
-    public NuevaReservaPanel() {
-        this(null);
-    }
+    // Componentes del "Ticket Visual"
+    private JPanel panelTicket;
+    private JLabel lblTicketRuta;
+    private JLabel lblTicketDuracion;
+    private JLabel lblTicketPrecio;
+    private JLabel lblTicketOrigenDestino;
+    
+    // Datos actuales
+    private double precioActual = 0.0;
 
+    // CONSTRUCTOR QUE ACEPTA MAINFRAME (Esto soluciona tu error)
     public NuevaReservaPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
-        gestor = new GestorRutas();
-        gestor.cargarDesdeFichero("rutas.txt");
+        
+        // Instanciamos el GestorRutas. 
+        // Al usar el constructor vacío, no dibuja interfaz gráfica aquí, solo carga datos.
+        gestor = new GestorRutas(); 
+        // Aseguramos carga de datos por si acaso el constructor vacío no lo hizo
+        gestor.cargarDesdeFichero("rutas.txt", null); 
 
         setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
+        setBackground(new Color(245, 247, 250));
 
-        JPanel centerPanel = new JPanel();
-        centerPanel.setLayout(new GridBagLayout());
+        // --- 1. Header ---
+        JPanel header = new JPanel();
+        header.setBackground(Color.WHITE);
+        header.setPreferredSize(new Dimension(0, 80));
+        header.setLayout(new GridBagLayout());
+        header.setBorder(BorderFactory.createMatteBorder(0,0,1,0, Color.LIGHT_GRAY));
+        
+        JLabel title = new JLabel("Nueva Reserva de Viaje");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        title.setForeground(new Color(40, 40, 40));
+        header.add(title);
+        add(header, BorderLayout.NORTH);
+
+        // --- 2. Panel Central (Formulario) ---
+        JPanel centerPanel = new JPanel(new GridBagLayout());
         centerPanel.setOpaque(false);
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(12,12,12,12);
+        gbc.insets = new Insets(10, 20, 10, 20);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // ---------- COMPONENTES ----------
+        // Fuentes
+        Font labelFont = new Font("Segoe UI", Font.BOLD, 14);
+        Font comboFont = new Font("Segoe UI", Font.PLAIN, 16);
+
+        // -- Selectores --
+        JLabel lblOrigen = new JLabel("Origen:");
+        lblOrigen.setFont(labelFont);
+        
         cbOrigen = new JComboBox<>();
+        cbOrigen.setFont(comboFont);
+        cbOrigen.setBackground(Color.WHITE);
+        cbOrigen.setPreferredSize(new Dimension(300, 40));
+
+        JLabel lblDestino = new JLabel("Destino:");
+        lblDestino.setFont(labelFont);
+        
         modeloDestino = new DefaultComboBoxModel<>();
         cbDestino = new JComboBox<>(modeloDestino);
+        cbDestino.setFont(comboFont);
+        cbDestino.setBackground(Color.WHITE);
+        cbDestino.setPreferredSize(new Dimension(300, 40));
 
-        lblInfo = new JLabel("Selecciona origen y destino", SwingConstants.CENTER);
-        lblInfo.setFont(new Font("Arial", Font.BOLD, 14));
+        // -- Panel Ticket --
+        crearPanelTicket();
 
-        JButton btnReservar = new JButton("Reservar");
-        btnReservar.setFont(new Font("Arial", Font.BOLD, 14));
+        // -- Botón Confirmar --
+        JButton btnReservar = new JButton("CONFIRMAR Y PAGAR");
+        btnReservar.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        btnReservar.setBackground(new Color(0, 100, 200));
+        btnReservar.setForeground(Color.WHITE);
+        btnReservar.setFocusPainted(false);
+        btnReservar.setBorderPainted(false);
+        btnReservar.setOpaque(true);
+        btnReservar.setPreferredSize(new Dimension(250, 50));
+        btnReservar.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // ---------- POBLAR ORIGEN ----------
-        for (String parada : gestor.getTodasParadas())
-            cbOrigen.addItem(parada);
-
-        cbOrigen.addActionListener(e -> actualizarDestinos());
-        cbDestino.addActionListener(e -> mostrarDetalles());
-        btnReservar.addActionListener(e -> guardarReserva());
-
-        // ---------- LAYOUT ----------
+        // Layout
         gbc.gridx = 0; gbc.gridy = 0;
-        centerPanel.add(new JLabel("Origen:", SwingConstants.RIGHT), gbc);
-
-        gbc.gridx = 1;
+        centerPanel.add(lblOrigen, gbc);
+        
+        gbc.gridx = 0; gbc.gridy = 1;
         centerPanel.add(cbOrigen, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 1;
-        centerPanel.add(new JLabel("Destino:"), gbc);
+        gbc.gridx = 0; gbc.gridy = 2;
+        centerPanel.add(lblDestino, gbc);
 
-        gbc.gridx = 1;
+        gbc.gridx = 0; gbc.gridy = 3;
         centerPanel.add(cbDestino, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 2;
-        centerPanel.add(lblInfo, gbc);
+        gbc.gridx = 0; gbc.gridy = 4;
+        gbc.insets = new Insets(30, 20, 30, 20);
+        centerPanel.add(panelTicket, gbc);
 
-        gbc.gridy = 3;
+        gbc.gridx = 0; gbc.gridy = 5;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.CENTER;
         centerPanel.add(btnReservar, gbc);
 
         add(centerPanel, BorderLayout.CENTER);
 
-        // ---- Reemplazado: barra superior con botón atrás visible y funcional ----
-        JPanel topBar = new JPanel(new BorderLayout());
-        topBar.setOpaque(false);
+        // --- Lógica de Carga ---
+        cargarOrigenesValidos();
 
-        JButton backBtn = new JButton("← Volver");
-        backBtn.setToolTipText("Volver al menú principal");
-        backBtn.setFont(new Font("Arial", Font.PLAIN, 19));
-        backBtn.setFocusPainted(false);
+        // Listeners
+        cbOrigen.addActionListener(e -> actualizarDestinos());
+        cbDestino.addActionListener(e -> actualizarVistaTicket());
+        btnReservar.addActionListener(e -> confirmarYGuardar());
 
-        // Mostrar como botón (fondo y borde)
-        backBtn.setOpaque(true);
-        backBtn.setContentAreaFilled(true);
-        backBtn.setBackground(new Color(230, 230, 230));
-        backBtn.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.GRAY),
-                BorderFactory.createEmptyBorder(6, 10, 6, 10)
-        ));
-
-        backBtn.addActionListener(e -> {
-            // intentar usar el mainFrame pasado en el constructor
-            if (this.mainFrame != null) {
-                this.mainFrame.mostrarPanel("MENU");
-                return;
-            }
-            // si mainFrame es null, buscar la ventana contenedora y castear a MainFrame
-            java.awt.Window w = javax.swing.SwingUtilities.getWindowAncestor(this);
-            if (w instanceof MainFrame) {
-                ((MainFrame) w).mostrarPanel("MENU");
-            }
-        });
-
-        topBar.add(backBtn, BorderLayout.WEST);
-        add(topBar, BorderLayout.NORTH);
-        // -------------------------------------------------
-
-        // Primer despliegue
-        if (cbOrigen.getItemCount() > 0)
-            cbOrigen.setSelectedIndex(0);
-
+        // Inicialización
+        if (cbOrigen.getItemCount() > 0) cbOrigen.setSelectedIndex(0);
         actualizarDestinos();
     }
 
-    // ==============================
-    // Cargar destinos solo de la misma ruta
-    // ==============================
+    private void cargarOrigenesValidos() {
+        List<String> todas = gestor.getTodasParadas();
+        for (String parada : todas) {
+            // Solo añadimos al combo si hay rutas saliendo de aquí
+            if (!gestor.getDestinosDirectosDesde(parada).isEmpty()) {
+                cbOrigen.addItem(parada);
+            }
+        }
+    }
+
+    private void crearPanelTicket() {
+        panelTicket = new JPanel(new BorderLayout());
+        panelTicket.setBackground(Color.WHITE);
+        panelTicket.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(new Color(200, 200, 200), 1, true),
+                BorderFactory.createEmptyBorder(15, 20, 15, 20)
+        ));
+        panelTicket.setPreferredSize(new Dimension(400, 140));
+        
+        // Sombra simulada (borde inferior grueso)
+        panelTicket.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 0, 4, 0, new Color(220, 220, 220)),
+            panelTicket.getBorder()
+        ));
+
+        JPanel topTicket = new JPanel(new BorderLayout());
+        topTicket.setOpaque(false);
+        JLabel lblBrand = new JLabel("BILLETE SENCILLO");
+        lblBrand.setFont(new Font("Arial", Font.BOLD, 12));
+        lblBrand.setForeground(Color.GRAY);
+        topTicket.add(lblBrand, BorderLayout.WEST);
+        
+        lblTicketRuta = new JLabel("RUTA: --");
+        lblTicketRuta.setFont(new Font("Monospaced", Font.BOLD, 12));
+        lblTicketRuta.setForeground(Color.GRAY);
+        topTicket.add(lblTicketRuta, BorderLayout.EAST);
+
+        lblTicketOrigenDestino = new JLabel("Seleccione Ruta", SwingConstants.CENTER);
+        lblTicketOrigenDestino.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        lblTicketOrigenDestino.setForeground(new Color(0, 70, 140));
+
+        JPanel bottomTicket = new JPanel(new GridLayout(1, 2));
+        bottomTicket.setOpaque(false);
+        
+        lblTicketDuracion = new JLabel("⏱ -- min");
+        lblTicketDuracion.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        lblTicketDuracion.setForeground(Color.DARK_GRAY);
+        
+        lblTicketPrecio = new JLabel("💶 -- €", SwingConstants.RIGHT);
+        lblTicketPrecio.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        lblTicketPrecio.setForeground(new Color(0, 100, 60));
+
+        bottomTicket.add(lblTicketDuracion);
+        bottomTicket.add(lblTicketPrecio);
+
+        JSeparator separator = new JSeparator();
+        separator.setForeground(Color.LIGHT_GRAY);
+
+        panelTicket.add(topTicket, BorderLayout.NORTH);
+        JPanel centro = new JPanel(new BorderLayout());
+        centro.setOpaque(false);
+        centro.add(lblTicketOrigenDestino, BorderLayout.CENTER);
+        centro.add(separator, BorderLayout.SOUTH);
+        panelTicket.add(centro, BorderLayout.CENTER);
+        panelTicket.add(bottomTicket, BorderLayout.SOUTH);
+        
+        panelTicket.setVisible(false);
+    }
+
     private void actualizarDestinos() {
         modeloDestino.removeAllElements();
         String origen = (String) cbOrigen.getSelectedItem();
@@ -126,46 +210,77 @@ public class NuevaReservaPanel extends JPanel {
         var opciones = gestor.getDestinosDirectosDesde(origen);
 
         if (opciones.isEmpty()) {
-            modeloDestino.addElement("-- No hay destinos desde aquí --");
-            lblInfo.setText("No hay destinos desde " + origen);
+            modeloDestino.addElement("-- No hay rutas --");
+            panelTicket.setVisible(false);
             return;
         }
 
-        for (var op : opciones)
-            modeloDestino.addElement(op.toString());
+        for (var op : opciones) {
+            modeloDestino.addElement(op.toString()); 
+        }
 
-        cbDestino.setSelectedIndex(0);
-        mostrarDetalles();
+        if (cbDestino.getItemCount() > 0) cbDestino.setSelectedIndex(0);
+        actualizarVistaTicket();
     }
 
-    private void mostrarDetalles() {
-        String txt = (String) cbDestino.getSelectedItem();
-        if (txt != null && !txt.startsWith("--"))
-            lblInfo.setText(txt);
-    }
-
-    // ==============================
-    // Guardar la reserva en "reservas.txt"
-    // ==============================
-    private void guardarReserva() {
-        String origen = (String) cbOrigen.getSelectedItem();
-        String txtDestino = (String) cbDestino.getSelectedItem();
-
-        if (txtDestino == null || txtDestino.startsWith("--")) {
-            JOptionPane.showMessageDialog(this, "Selecciona un destino válido.");
+    private void actualizarVistaTicket() {
+        String selected = (String) cbDestino.getSelectedItem();
+        
+        if (selected == null || selected.startsWith("--")) {
+            panelTicket.setVisible(false);
             return;
         }
 
-        try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter("reservas.txt", true)))) {
-            pw.println(origen + " -> " + txtDestino);
-            JOptionPane.showMessageDialog(this,
-                    "Reserva realizada:\n\n" + origen + " → " + txtDestino,
-                    "Reserva confirmada", JOptionPane.INFORMATION_MESSAGE);
+        try {
+            String origen = (String) cbOrigen.getSelectedItem();
+            // Parseamos el toString de OpcionDestino: "Destino (ID) — min — precio"
+            String[] partes = selected.split("—"); 
 
+            String destinoLimpio = partes[0].split("\\(")[0].trim();
+            String idRuta = partes[0].substring(partes[0].indexOf("(")+1, partes[0].indexOf(")"));
+            String tiempo = partes[1].trim();
+            String precioStr = partes[2].trim();
+            
+            lblTicketRuta.setText("ID: " + idRuta);
+            lblTicketOrigenDestino.setText(origen + " ➜ " + destinoLimpio);
+            lblTicketDuracion.setText("⏱ " + tiempo);
+            lblTicketPrecio.setText("💶 " + precioStr);
+            
+            this.precioActual = Double.parseDouble(precioStr.replace("€", "").replace(",", "."));
+
+            panelTicket.setVisible(true);
+            panelTicket.revalidate();
+            panelTicket.repaint();
+            
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this,
-                    "Error al guardar la reserva",
-                    "Error", JOptionPane.ERROR_MESSAGE);
+            panelTicket.setVisible(false);
+        }
+    }
+
+    private void confirmarYGuardar() {
+        if (!panelTicket.isVisible()) {
+            JOptionPane.showMessageDialog(this, "Por favor, selecciona un trayecto válido.", "Información incompleta", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        int respuesta = JOptionPane.showConfirmDialog(
+            this, 
+            "Estás a punto de comprar el siguiente billete:\n\n" +
+            "Viaje: " + lblTicketOrigenDestino.getText() + "\n" +
+            "Precio: " + lblTicketPrecio.getText() + "\n\n" +
+            "¿Deseas confirmar el pago?",
+            "Confirmar Compra",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE
+        );
+
+        if (respuesta == JOptionPane.YES_OPTION) {
+            try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter("reservas.txt", true)))) {
+                pw.println(lblTicketOrigenDestino.getText() + " | " + lblTicketPrecio.getText());
+                JOptionPane.showMessageDialog(this, "✅ ¡Reserva realizada con éxito!\nBuen viaje.", "Confirmado", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Error al guardar la reserva en el sistema.", "Error Crítico", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 }

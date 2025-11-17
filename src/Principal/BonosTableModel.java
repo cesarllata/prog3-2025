@@ -6,7 +6,7 @@ import java.util.List;
 public class BonosTableModel extends AbstractTableModel {
 
     private List<Bono> bonos;
-    private final String[] columnNames = {"ID","Nombre del Bono", "Validez", "Vigencia","Precio (€)"};
+    private final String[] columnNames = {"ID", "Nombre del Bono", "Validez", "Vigencia", "Precio (€)"};
 
     public BonosTableModel(List<Bono> bonos) {
         this.bonos = bonos;
@@ -30,17 +30,9 @@ public class BonosTableModel extends AbstractTableModel {
     @Override
     public Class<?> getColumnClass(int columnIndex) {
         switch (columnIndex) {
-            case 0:
-            case 1:
-                return Integer.class;
-            case 2:
-                return String.class;
-            case 3:
-                return String.class;
-            case 4:
-                return Double.class;
-            default:
-                return Object.class;
+            case 0: return Integer.class;
+            case 4: return Double.class;
+            default: return String.class;
         }
     }
 
@@ -48,30 +40,21 @@ public class BonosTableModel extends AbstractTableModel {
     public Object getValueAt(int rowIndex, int columnIndex) {
         Bono bono = bonos.get(rowIndex);
         switch (columnIndex) {
-            case 0:
-                return bono.getId();
-            case 1:
-                return bono.getNombre();
-            case 2:
-                return bono.getValidez();
-            case 3:
-                return bono.getVigencia();
-            case 4:
-                return bono.getPrecio();
-            default:
-                return null;
+            case 0: return bono.getId();
+            case 1: return bono.getNombre();
+            case 2: return bono.getValidez();
+            case 3: return bono.getVigencia();
+            case 4: return bono.getPrecio();
+            default: return null;
         }
     }
 
+    // Esto asegura que la tabla de arriba NO sea editable
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         return false;
     }
 
-    // --- MÉTODO NUEVO ---
-    /**
-     * Devuelve el objeto Bono completo para una fila específica del modelo.
-     */
     public Bono getBonoAt(int rowIndex) {
         return bonos.get(rowIndex);
     }

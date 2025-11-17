@@ -8,72 +8,85 @@ public class RegistroPanel extends JPanel {
 
     public RegistroPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
-        setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
+        
+        setLayout(new GridBagLayout());
+        setBackground(new Color(240, 248, 255));
 
-        // ---- Añadido: barra superior con botón atrás ----
-        JPanel topBar = new JPanel(new BorderLayout());
-        topBar.setOpaque(false);
-
-        JButton backBtn = new JButton("← Volver");
-        backBtn.setToolTipText("Volver al menú principal");
-        backBtn.setFont(new Font("Arial", Font.PLAIN, 14));
-        backBtn.setFocusPainted(false);
-
-        backBtn.setOpaque(true);
-        backBtn.setContentAreaFilled(true);
-        backBtn.setBackground(new Color(230, 230, 230));
-        backBtn.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.GRAY),
-                BorderFactory.createEmptyBorder(6, 10, 6, 10)
+        // --- Panel Tarjeta ---
+        JPanel cardPanel = new JPanel();
+        cardPanel.setLayout(new BoxLayout(cardPanel, BoxLayout.Y_AXIS));
+        cardPanel.setBackground(Color.WHITE);
+        cardPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
+                BorderFactory.createEmptyBorder(30, 40, 30, 40)
         ));
 
-        backBtn.addActionListener(e -> {
-            if (this.mainFrame != null) {
-                this.mainFrame.mostrarPanel("MENU");
-                return;
-            }
-            Window w = SwingUtilities.getWindowAncestor(this);
-            if (w instanceof MainFrame) {
-                ((MainFrame) w).mostrarPanel("MENU");
-            }
-        });
+        // Título
+        JLabel titulo = new JLabel("Crear Nueva Cuenta");
+        titulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        titulo.setForeground(new Color(0, 70, 140));
+        titulo.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        topBar.add(backBtn, BorderLayout.WEST);
-        add(topBar, BorderLayout.NORTH);
-        // -------------------------------------------------
+        // Campos
+        JTextField txtNombre = createStyledField("Nombre Completo");
+        JTextField txtEmail = createStyledField("Correo Electrónico");
+        JPasswordField txtPass = createStyledPasswordField("Contraseña");
 
-        JTextField txtNombre = new JTextField();
-        JTextField txtEmail = new JTextField();
-        JPasswordField txtPass = new JPasswordField();
+        // Botón
+        JButton btnRegistrar = new JButton("REGISTRARSE");
+        btnRegistrar.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnRegistrar.setForeground(Color.WHITE);
+        btnRegistrar.setBackground(new Color(0, 120, 60)); // Verde
+        btnRegistrar.setFocusPainted(false);
+        btnRegistrar.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btnRegistrar.setMaximumSize(new Dimension(200, 40));
+        btnRegistrar.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        JPanel centerPanel = new JPanel(new GridLayout(4, 2, 10, 10));
-        centerPanel.setOpaque(false);
-        centerPanel.add(new JLabel("Nombre:"));
-        centerPanel.add(txtNombre);
-        centerPanel.add(new JLabel("Email:"));
-        centerPanel.add(txtEmail);
-        centerPanel.add(new JLabel("Contraseña:"));
-        centerPanel.add(txtPass);
+        // Añadir componentes a la tarjeta
+        cardPanel.add(titulo);
+        cardPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+        cardPanel.add(new JLabel("Nombre:"));
+        cardPanel.add(txtNombre);
+        cardPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        cardPanel.add(new JLabel("Email:"));
+        cardPanel.add(txtEmail);
+        cardPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        cardPanel.add(new JLabel("Contraseña:"));
+        cardPanel.add(txtPass);
+        cardPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+        cardPanel.add(btnRegistrar);
 
-        add(centerPanel, BorderLayout.CENTER);
+        add(cardPanel);
 
-        JButton btnRegistrar = new JButton("Registrar");
+        // Acción
         btnRegistrar.addActionListener(e -> {
+            if(txtNombre.getText().trim().isEmpty()) return;
 
-            // Aquí podrías guardar en BBDD o archivo
             Usuario nuevo = new Usuario(txtNombre.getText());
-
             JOptionPane.showMessageDialog(this,"Usuario registrado con éxito");
             
-            // Iniciar sesión automáticamente tras registro
+            // Iniciar sesión automáticamente
             mainFrame.loginExitoso(nuevo);
+            
+            // Limpiar
+            txtNombre.setText("");
+            txtEmail.setText("");
+            txtPass.setText("");
         });
+    }
 
-        JPanel southPanel = new JPanel();
-        southPanel.setOpaque(false);
-        southPanel.add(btnRegistrar);
-
-        add(southPanel, BorderLayout.SOUTH);
+    // Helpers para estilo
+    private JTextField createStyledField(String tooltip) {
+        JTextField field = new JTextField(20);
+        field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        field.setToolTipText(tooltip);
+        return field;
+    }
+    
+    private JPasswordField createStyledPasswordField(String tooltip) {
+        JPasswordField field = new JPasswordField(20);
+        field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        field.setToolTipText(tooltip);
+        return field;
     }
 }

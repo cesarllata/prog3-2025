@@ -8,93 +8,78 @@ public class LoginPanel extends JPanel {
 
     public LoginPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
-
-        // Asegurar layout que permita colocar la barra superior correctamente
-        setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
-
-        // ---- Añadido / reemplazado: barra superior con botón atrás visible y funcional ----
-        JPanel topBar = new JPanel(new BorderLayout());
-        topBar.setOpaque(false);
-
-        JButton backBtn = createBackButton();
-        topBar.add(backBtn, BorderLayout.WEST);
-
-        add(topBar, BorderLayout.NORTH);
-        // ----------------------------------------------------------------------------------
-
+        
+        // Layout principal para centrar la "tarjeta"
         setLayout(new GridBagLayout());
-        setBackground(new Color(245, 248, 255));
+        setBackground(new Color(240, 248, 255)); // Fondo suave general
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-
-        JLabel titulo = new JLabel("Iniciar Sesión");
-        titulo.setFont(new Font("Arial", Font.BOLD, 22));
-
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 2;
-        add(titulo, gbc);
-
-        gbc.gridwidth = 1;
-
-        JLabel lblUsuario = new JLabel("Usuario:");
-        JTextField txtUsuario = new JTextField(15);
-        JLabel lblPass = new JLabel("Contraseña:");
-        JPasswordField txtPass = new JPasswordField(15);
-
-        gbc.gridy = 1;
-        gbc.gridx = 0;
-        add(lblUsuario, gbc);
-        gbc.gridx = 1;
-        add(txtUsuario, gbc);
-
-        gbc.gridy = 2;
-        gbc.gridx = 0;
-        add(lblPass, gbc);
-        gbc.gridx = 1;
-        add(txtPass, gbc);
-
-        JButton btnLogin = new JButton("Iniciar Sesión");
-        btnLogin.setPreferredSize(new Dimension(140, 35));
-
-        gbc.gridy = 3;
-        gbc.gridx = 0;
-        gbc.gridwidth = 2;
-        add(btnLogin, gbc);
-
-        btnLogin.addActionListener(e -> {
-            Usuario usuarioSimulado = new Usuario(txtUsuario.getText());
-            mainFrame.loginExitoso(usuarioSimulado);
-        });
-    }
-
-    private JButton createBackButton() {
-        JButton backBtn = new JButton("← Volver");
-        backBtn.setToolTipText("Volver al menú principal");
-        backBtn.setFont(new Font("Arial", Font.PLAIN, 14));
-        backBtn.setFocusPainted(false);
-
-        backBtn.setOpaque(true);
-        backBtn.setContentAreaFilled(true);
-        backBtn.setBackground(new Color(230, 230, 230));
-        backBtn.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.GRAY),
-                BorderFactory.createEmptyBorder(6, 10, 6, 10)
+        // --- Panel Tarjeta (El recuadro blanco) ---
+        JPanel cardPanel = new JPanel();
+        cardPanel.setLayout(new BoxLayout(cardPanel, BoxLayout.Y_AXIS));
+        cardPanel.setBackground(Color.WHITE);
+        cardPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
+                BorderFactory.createEmptyBorder(30, 40, 30, 40)
         ));
 
-        backBtn.addActionListener(e -> {
-            if (this.mainFrame != null) {
-                this.mainFrame.mostrarPanel("MENU");
+        // Título
+        JLabel titulo = new JLabel("Iniciar Sesión");
+        titulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        titulo.setForeground(new Color(0, 70, 140));
+        titulo.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // Campos
+        JLabel lblUsuario = new JLabel("Usuario");
+        lblUsuario.setAlignmentX(Component.LEFT_ALIGNMENT);
+        lblUsuario.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        
+        JTextField txtUsuario = new JTextField(20);
+        txtUsuario.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+
+        JLabel lblPass = new JLabel("Contraseña");
+        lblPass.setAlignmentX(Component.LEFT_ALIGNMENT);
+        lblPass.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        
+        JPasswordField txtPass = new JPasswordField(20);
+        txtPass.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+
+        // Botón
+        JButton btnLogin = new JButton("ENTRAR");
+        btnLogin.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnLogin.setForeground(Color.WHITE);
+        btnLogin.setBackground(new Color(0, 70, 140));
+        btnLogin.setFocusPainted(false);
+        btnLogin.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btnLogin.setMaximumSize(new Dimension(150, 40));
+        btnLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        // Espaciadores
+        cardPanel.add(titulo);
+        cardPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+        cardPanel.add(lblUsuario);
+        cardPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        cardPanel.add(txtUsuario);
+        cardPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        cardPanel.add(lblPass);
+        cardPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        cardPanel.add(txtPass);
+        cardPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+        cardPanel.add(btnLogin);
+
+        add(cardPanel);
+
+        // Acción
+        btnLogin.addActionListener(e -> {
+            if(txtUsuario.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Introduce un usuario", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            Window w = SwingUtilities.getWindowAncestor(this);
-            if (w instanceof MainFrame) {
-                ((MainFrame) w).mostrarPanel("MENU");
-            }
+            Usuario usuarioSimulado = new Usuario(txtUsuario.getText());
+            JOptionPane.showMessageDialog(this, "¡Bienvenido, " + usuarioSimulado.getNombre() + "!");
+            mainFrame.loginExitoso(usuarioSimulado);
+            // Limpiar campos
+            txtUsuario.setText("");
+            txtPass.setText("");
         });
-        return backBtn;
     }
 }
