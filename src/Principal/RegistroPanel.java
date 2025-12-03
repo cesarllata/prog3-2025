@@ -62,7 +62,7 @@ public class RegistroPanel extends JPanel {
         btnRegistrar.addActionListener(e -> {
             if(txtNombre.getText().trim().isEmpty()) return;
 
-            Usuario nuevo = new Usuario(txtNombre.getText());
+            Usuario nuevo = new Usuario(txtNombre.getText(), txtEmail.getText(), txtPass.getText(), "123456789");
             JOptionPane.showMessageDialog(this,"Usuario registrado con éxito");
             
             // Iniciar sesión automáticamente

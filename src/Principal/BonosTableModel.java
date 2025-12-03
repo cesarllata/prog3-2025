@@ -42,9 +42,9 @@ public class BonosTableModel extends AbstractTableModel {
         switch (columnIndex) {
             case 0: return bono.getId();
             case 1: return bono.getNombre();
-            case 2: return bono.getValidez();
-            case 3: return bono.getVigencia();
-            case 4: return bono.getPrecio();
+            case 2: return bono.getDescripcion();
+            case 3: return bono.getFechaExpiracion();
+            case 4: return bono.getDescuento();
             default: return null;
         }
     }

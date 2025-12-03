@@ -74,7 +74,7 @@ public class LoginPanel extends JPanel {
                 JOptionPane.showMessageDialog(this, "Introduce un usuario", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            Usuario usuarioSimulado = new Usuario(txtUsuario.getText());
+            Usuario usuarioSimulado = new Usuario(txtUsuario.getText(), "email@email.com", "password", "123456789");
             JOptionPane.showMessageDialog(this, "¡Bienvenido, " + usuarioSimulado.getNombre() + "!");
             mainFrame.loginExitoso(usuarioSimulado);
             // Limpiar campos

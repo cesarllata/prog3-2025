@@ -39,11 +39,19 @@ public class BonosPanel extends JPanel {
 
         // --- Datos ---
         List<Bono> listaBonos = new ArrayList<>();
-        listaBonos.add(new Bono(1, "Bono Mensual", "30 días", 45.00, "Viajes ilimitados", "hasta 31/12/2025"));
-        listaBonos.add(new Bono(2, "Bono 10 Viajes", "10 viajes", 12.50, "Multipersonal", "hasta 31/12/2025"));
-        listaBonos.add(new Bono(3, "Abono Joven", "Mensual (<26 años)", 25.00, "Tarifa reducida", "hasta 31/12/2025"));
-        listaBonos.add(new Bono(4, "Bono Turista", "3 días", 18.00, "72 horas ilimitadas", "hasta 31/12/2025"));
-        listaBonos.add(new Bono(5, "Abono Verano", "Junio-Agosto", 60.00, "Especial temporada", "hasta 31/08/2025"));
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        
+        cal.set(2025, 11, 31); // 31/12/2025
+        java.util.Date fecha2025 = cal.getTime();
+        
+        cal.set(2026, 7, 31);  // 31/08/2026
+        java.util.Date fecha2026 = cal.getTime();
+        
+        listaBonos.add(new Bono(1, "Bono Mensual", "Viajes ilimitados", 45.00, 30, fecha2025));
+        listaBonos.add(new Bono(2, "Bono 10 Viajes", "10 viajes sin caducidad", 12.50, 10, fecha2025));
+        listaBonos.add(new Bono(3, "Abono Joven", "Tarifa reducida (<26 años)", 25.00, 30, fecha2025));
+        listaBonos.add(new Bono(4, "Bono Turista", "72 horas ilimitadas", 18.00, 3, fecha2025));
+        listaBonos.add(new Bono(5, "Abono Verano", "Junio-Agosto especial", 60.00, 30, fecha2026));
 
         // --- Modelo Principal ---
         bonosModel = new BonosTableModel(listaBonos);
@@ -167,7 +175,7 @@ public class BonosPanel extends JPanel {
             }
 
             String nombreBono = bonoAComprar.getNombre();
-            Double precio = bonoAComprar.getPrecio();
+            Double precio = bonoAComprar.getDescuento();
 
             int opcion = JOptionPane.showConfirmDialog(
                     this,
