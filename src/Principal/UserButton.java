@@ -6,10 +6,6 @@ import java.awt.event.*;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-/**
- * Componente clicable compacto: avatar circular + nombre.
- * Exponer setUsername(...) y addActionListener(...).
- */
 public class UserButton extends JPanel {
     private final ProfileAvatar avatar;
     private final JLabel lblName;
@@ -18,7 +14,8 @@ public class UserButton extends JPanel {
     public UserButton() {
         super(new FlowLayout(FlowLayout.CENTER, 8, 8));
         setOpaque(true);
-        setPreferredSize(new Dimension(140, 44));
+        // Más ancho para que quepa el saldo
+        setPreferredSize(new Dimension(200, 44));
         setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(180, 180, 180)),
                 BorderFactory.createEmptyBorder(4, 8, 4, 8)
@@ -29,11 +26,10 @@ public class UserButton extends JPanel {
         add(avatar);
 
         lblName = new JLabel("Usuario");
-        lblName.setFont(new Font("Arial", Font.BOLD, 14));
+        lblName.setFont(new Font("Arial", Font.BOLD, 13));
         lblName.setForeground(Color.DARK_GRAY);
         add(lblName);
 
-        // Hover visual
         MouseAdapter hover = new MouseAdapter() {
             private final Color normal = getBackground();
             private final Color hoverCol = normal.brighter();
@@ -45,9 +41,18 @@ public class UserButton extends JPanel {
         for (Component c : getComponents()) c.addMouseListener(hover);
     }
 
-    public void setUsername(String name) {
-        lblName.setText(name != null ? name : "Usuario");
-        avatar.setInitials(extractInitials(name));
+    public void setUsuario(Usuario u) {
+        if (u != null) {
+            // Visualizar saldo: Juan (50,00 €)
+            String texto = String.format("%s (%.2f €)", u.getNombre(), u.getSaldo());
+            lblName.setText(texto);
+            avatar.setInitials(extractInitials(u.getNombre()));
+        } else {
+            lblName.setText("Usuario");
+            avatar.setInitials("");
+        }
+        revalidate();
+        repaint();
     }
 
     public void addActionListener(ActionListener l) {
@@ -66,7 +71,6 @@ public class UserButton extends JPanel {
         return ("" + parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
     }
 
-    // Avatar interno
     private static class ProfileAvatar extends JComponent {
         private final int size;
         private String initials = "";
@@ -96,8 +100,7 @@ public class UserButton extends JPanel {
                 g2.drawOval(0, 0, size - 1, size - 1);
                 if (!initials.isEmpty()) {
                     g2.setColor(Color.WHITE);
-                    Font font = g2.getFont().deriveFont(Font.BOLD, Math.max(10, size / 2f));
-                    g2.setFont(font);
+                    g2.setFont(g2.getFont().deriveFont(Font.BOLD, Math.max(10, size / 2f)));
                     FontMetrics fm = g2.getFontMetrics();
                     int tx = (size - fm.stringWidth(initials)) / 2;
                     int ty = (size + fm.getAscent() - fm.getDescent()) / 2;

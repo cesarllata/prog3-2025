@@ -1,14 +1,13 @@
 package Principal;
-// se ha utilizado el uso de IAG para realizar la parte practica y estetica de esta parte.
+
+import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.sql.*; // Importante para la BD
 import java.util.*;
-import javax.swing.*;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
 
 public class GestorRutas extends JPanel {
     private MainFrame mainFrame;
@@ -30,33 +29,28 @@ public class GestorRutas extends JPanel {
     public GestorRutas(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
         
-        // --- COORDENADAS ---
+        // --- COORDENADAS (Se mantienen igual) ---
         coordenadas.put("A Coruna", new Point(50, 80));
         coordenadas.put("Vigo", new Point(50, 140));
         coordenadas.put("Oporto", new Point(50, 220));
-        
         coordenadas.put("Gijon", new Point(160, 70));
         coordenadas.put("Oviedo", new Point(160, 100));
         coordenadas.put("Leon", new Point(180, 160));
-        
         coordenadas.put("Santander", new Point(280, 70));
         coordenadas.put("Bilbao", new Point(360, 80));
         coordenadas.put("San Sebastian", new Point(420, 75));
         coordenadas.put("Pamplona", new Point(440, 110));
         coordenadas.put("Vitoria", new Point(360, 120));
         coordenadas.put("Logrono", new Point(400, 150));
-        
         coordenadas.put("Burgos", new Point(300, 170));
         coordenadas.put("Valladolid", new Point(260, 220));
         coordenadas.put("Madrid", new Point(340, 300)); 
         coordenadas.put("Zaragoza", new Point(480, 200));
-        
         coordenadas.put("Barcelona", new Point(600, 160));
         coordenadas.put("Tarragona", new Point(580, 210));
         coordenadas.put("Castellon", new Point(560, 280));
         coordenadas.put("Valencia", new Point(540, 330));
         coordenadas.put("Alicante", new Point(550, 400));
-        
         coordenadas.put("Murcia", new Point(520, 430));
         coordenadas.put("Cartagena", new Point(540, 460));
 
@@ -87,7 +81,7 @@ public class GestorRutas extends JPanel {
             BorderFactory.createMatteBorder(0, 1, 0, 0, Color.LIGHT_GRAY),
             BorderFactory.createEmptyBorder(10, 10, 10, 10)
         ));
-        panelLeyenda.setPreferredSize(new Dimension(120, 0));
+        panelLeyenda.setPreferredSize(new Dimension(140, 0));
         
         JLabel titleLeyenda = new JLabel("LEYENDA");
         titleLeyenda.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -99,10 +93,87 @@ public class GestorRutas extends JPanel {
         scrollLeyenda.setBorder(null);
         add(scrollLeyenda, BorderLayout.EAST);
 
-        cargarDesdeFichero("rutas.txt", panelLeyenda);
+        // --- AQUÍ ESTÁ EL CAMBIO IMPORTANTE: CARGAR DESDE BD ---
+        cargarDesdeBD(panelLeyenda);
     }
 
-    // --- CLASE DEL MAPA (Visual mejorado) ---
+    // --- NUEVO MÉTODO PARA LEER DE SQLITE ---
+    public void cargarDesdeBD(JPanel panelLeyenda) {
+        rutasPorId.clear();
+        rutasPorParada.clear();
+        coloresAsignados.clear();
+        indiceColorActual = 0;
+        
+        if(panelLeyenda != null) {
+            while(panelLeyenda.getComponentCount() > 2) panelLeyenda.remove(2);
+        }
+
+        // Usamos una conexión temporal solo para leer las rutas y pintar el mapa
+        GestorBD gestorBD = new GestorBD();
+        Connection conn = gestorBD.getConnection();
+
+        String sql = "SELECT * FROM ruta";
+
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                String nombreCompleto = rs.getString("nombre"); // Ej: "A0: Bilbao - Santander"
+                String desc = rs.getString("descripcion");
+                String origen = rs.getString("origen");
+                String destino = rs.getString("destino");
+                int duracion = rs.getInt("duracion");
+                double precio = rs.getDouble("precio");
+
+                // Extraer el ID corto (A0, M1, etc.) del nombre completo
+                String idRuta = "R"; // Valor por defecto
+                if (nombreCompleto.contains(":")) {
+                    idRuta = nombreCompleto.split(":")[0].trim();
+                }
+
+                // Recuperar o crear la Ruta lógica en memoria
+                Ruta rutaObj = rutasPorId.computeIfAbsent(idRuta, k -> new Ruta(k, desc));
+
+                // Crear el segmento
+                Segmento s = new Segmento(origen, destino, duracion, precio);
+                rutaObj.addSegmento(s);
+
+                // Registrar paradas
+                rutasPorParada.computeIfAbsent(origen, k -> new HashSet<>()).add(idRuta);
+                rutasPorParada.computeIfAbsent(destino, k -> new HashSet<>()).add(idRuta);
+            }
+
+            // Una vez cargados los datos, actualizamos la leyenda
+            for (Ruta r : rutasPorId.values()) {
+                Color c = getColorPorRuta(r.getId());
+                if(panelLeyenda != null) {
+                    JLabel item = new JLabel("● Ruta " + r.getId());
+                    item.setForeground(c);
+                    item.setFont(new Font("Segoe UI", Font.BOLD, 12));
+                    item.setAlignmentX(Component.LEFT_ALIGNMENT);
+                    item.setToolTipText(r.getNombre());
+                    panelLeyenda.add(item);
+                    panelLeyenda.add(Box.createRigidArea(new Dimension(0, 8)));
+                }
+            }
+
+            if(panelLeyenda != null) {
+                panelLeyenda.revalidate();
+                panelLeyenda.repaint();
+            }
+            repaint(); // Repintar mapa
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error leyendo rutas de la BD: " + e.getMessage());
+        } finally {
+            // No cerramos el GestorBD aquí si lo usamos en otros sitios, 
+            // pero para esta carga puntual está bien, o dejar que Main lo gestione.
+            // gestorBD.cerrar(); 
+        }
+    }
+
+    // --- CLASE DEL MAPA (Visual mejorado - IDÉNTICO AL ANTERIOR) ---
     private class MapaPanel extends JPanel {
         public MapaPanel() {
             setBackground(new Color(245, 247, 250));
@@ -117,7 +188,6 @@ public class GestorRutas extends JPanel {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-            // Escalado
             double escalaX = (double) getWidth() / ANCHO_BASE;
             double escalaY = (double) getHeight() / ALTO_BASE;
             double escala = Math.min(escalaX, escalaY);
@@ -150,37 +220,30 @@ public class GestorRutas extends JPanel {
                 boolean activa = rutasPorParada.containsKey(ciudad);
 
                 if (activa) {
-                    // Punto Ciudad
                     g2.setColor(new Color(50, 50, 50));
                     g2.fillOval(p.x - 6, p.y - 6, 12, 12);
                     g2.setColor(Color.WHITE);
                     g2.fillOval(p.x - 3, p.y - 3, 6, 6);
 
-                    // --- ETIQUETA INTELIGENTE ---
                     g2.setFont(new Font("SansSerif", Font.BOLD, 11));
                     FontMetrics fm = g2.getFontMetrics();
                     int textW = fm.stringWidth(ciudad);
                     int textH = fm.getHeight();
 
-                    // Por defecto: a la derecha
                     int labelX = p.x + 12;
                     int labelY = p.y + 4;
 
-                    // CASOS ESPECIALES (Norte y zonas densas)
-                    // Movemos la etiqueta ARRIBA para que no la tache la línea lateral
                     if (ciudad.equals("Gijon") || ciudad.equals("Santander") || 
                         ciudad.equals("Bilbao") || ciudad.equals("San Sebastian") || 
                         ciudad.equals("Oviedo") || ciudad.equals("A Coruna")) {
                         
-                        labelX = p.x - (textW / 2); // Centrado horizontal
-                        labelY = p.y - 10;          // Arriba del punto
+                        labelX = p.x - (textW / 2);
+                        labelY = p.y - 10;          
                     }
 
-                    // "Halo" blanco para leer mejor si pasa una línea
                     g2.setColor(new Color(255, 255, 255, 200));
                     g2.fillRect(labelX - 2, labelY - textH + 2, textW + 4, textH);
 
-                    // Texto final
                     g2.setColor(Color.DARK_GRAY);
                     g2.drawString(ciudad, labelX, labelY);
                 }
@@ -189,11 +252,9 @@ public class GestorRutas extends JPanel {
         }
     }
 
-    // --- LÓGICA DE RUTAS BIDIRECCIONALES ---
-    
+    // --- LÓGICA DE RUTAS BIDIRECCIONALES (IDÉNTICO AL ANTERIOR) ---
     public List<OpcionDestino> getDestinosDirectosDesde(String origen) {
         List<OpcionDestino> res = new ArrayList<>();
-        // Obtenemos todas las rutas que pasan por esta parada
         Set<String> rutas = rutasPorParada.getOrDefault(origen, Collections.emptySet());
 
         for (String id : rutas) {
@@ -202,11 +263,10 @@ public class GestorRutas extends JPanel {
             int idx = paradas.indexOf(origen);
             if (idx == -1) continue;
 
-            // 1. SENTIDO IDA (Forward): idx -> final
+            // 1. SENTIDO IDA
             for (int j = idx + 1; j < paradas.size(); j++) {
                 int min = 0;
                 double cost = 0.0;
-                // Sumar segmentos desde idx hasta j
                 for (int k = idx; k < j; k++) {
                     Segmento seg = r.getSegmentos().get(k);
                     min += seg.getMinutos();
@@ -215,12 +275,10 @@ public class GestorRutas extends JPanel {
                 res.add(new OpcionDestino(r.getId(), r.getNombre(), paradas.get(j), min, cost));
             }
 
-            // 2. SENTIDO VUELTA (Backward): idx -> principio (NUEVO)
+            // 2. SENTIDO VUELTA
             for (int j = idx - 1; j >= 0; j--) {
                 int min = 0;
                 double cost = 0.0;
-                // Sumar segmentos hacia atrás. 
-                // Para ir de k a k-1, usamos el segmento k-1.
                 for (int k = idx; k > j; k--) {
                     Segmento seg = r.getSegmentos().get(k - 1);
                     min += seg.getMinutos();
@@ -230,74 +288,21 @@ public class GestorRutas extends JPanel {
             }
         }
         
-        // Ordenar por tiempo para que salgan las más rápidas primero
         res.sort(Comparator.comparingInt(OpcionDestino::getMinutos));
         return res;
     }
 
-    // --- CARGA DE DATOS ---
-    public void cargarDesdeFichero(String fichero, JPanel panelLeyenda) {
-        rutasPorId.clear();
-        rutasPorParada.clear();
-        coloresAsignados.clear();
-        indiceColorActual = 0;
-        
-        if(panelLeyenda != null) {
-            while(panelLeyenda.getComponentCount() > 2) panelLeyenda.remove(2);
-        }
-
-        try (BufferedReader br = new BufferedReader(new FileReader(fichero))) {
-            String linea;
-            Ruta actual = null;
-
-            while ((linea = br.readLine()) != null) {
-                linea = linea.trim();
-                if (linea.isEmpty()) { actual = null; continue; }
-
-                if (linea.startsWith("RUTA,")) {
-                    String[] p = linea.split(",", 3);
-                    String id = p[1].trim();
-                    String nombre = p.length > 2 ? p[2].trim() : "";
-                    
-                    actual = new Ruta(id, nombre);
-                    rutasPorId.put(actual.getId(), actual);
-
-                    Color c = getColorPorRuta(id);
-
-                    if(panelLeyenda != null) {
-                        JLabel item = new JLabel("● Ruta " + id);
-                        item.setForeground(c);
-                        item.setFont(new Font("Segoe UI", Font.BOLD, 12));
-                        item.setAlignmentX(Component.LEFT_ALIGNMENT);
-                        item.setToolTipText(nombre);
-                        panelLeyenda.add(item);
-                        panelLeyenda.add(Box.createRigidArea(new Dimension(0, 8)));
-                    }
-                } else {
-                    String[] p = linea.split(",");
-                    if (p.length < 4) continue;
-                    Segmento s = new Segmento(p[0].trim(), p[1].trim(),
-                            Integer.parseInt(p[2].trim()),
-                            Double.parseDouble(p[3].trim()));
-                    
-                    if (actual != null) {
-                        actual.addSegmento(s);
-                        rutasPorParada.computeIfAbsent(s.getOrigen(), k -> new HashSet<>()).add(actual.getId());
-                        rutasPorParada.computeIfAbsent(s.getDestino(), k -> new HashSet<>()).add(actual.getId());
-                    }
-                }
-            }
-            if(panelLeyenda != null) panelLeyenda.revalidate();
-            repaint();
-        } catch (Exception e) { }
+    public List<String> getTodasParadas() {
+        List<String> list = new ArrayList<>(rutasPorParada.keySet());
+        Collections.sort(list);
+        return list;
     }
 
-    // --- COLORES DISTINTOS ---
+    // --- COLORES ---
     private final Color[] PALETA_COLORES = {
         Color.RED, new Color(0, 0, 200), new Color(0, 180, 0), new Color(255, 140, 0),
         new Color(148, 0, 211), new Color(0, 200, 200), Color.MAGENTA, new Color(139, 69, 19),
-        new Color(255, 105, 180), new Color(128, 128, 0), new Color(0, 0, 0), new Color(75, 0, 130),
-        new Color(255, 215, 0), new Color(0, 128, 128), new Color(220, 20, 60)
+        new Color(255, 105, 180), new Color(128, 128, 0), new Color(0, 0, 0), new Color(75, 0, 130)
     };
 
     private Color getColorPorRuta(String idRuta) {
@@ -306,12 +311,6 @@ public class GestorRutas extends JPanel {
         coloresAsignados.put(idRuta, colorAsignado);
         indiceColorActual++;
         return colorAsignado;
-    }
-
-    public List<String> getTodasParadas() {
-        List<String> list = new ArrayList<>(rutasPorParada.keySet());
-        Collections.sort(list);
-        return list;
     }
 
     // --- MODELOS ---

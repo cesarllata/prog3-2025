@@ -1,98 +1,165 @@
 package Principal;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.*;
-import java.lang.reflect.Method;
 
-/**
- * Panel lateral reutilizable que ocupa la altura completa de la ventana principal.
- * Recibe MainFrame para poder navegar / cerrar sesión.
- */
 public class UserSidePanel extends JDialog {
 
-    public UserSidePanel(Window owner, int preferredWidth, MainFrame mainFrame) {
+    private final Color COLOR_HOVER = new Color(230, 240, 255);
+    private final Color COLOR_TEXTO = new Color(60, 60, 60);
+    private final Color COLOR_ROJO = new Color(200, 50, 50);
+
+    public UserSidePanel(Window owner, MainFrame mainFrame, Component anchor) {
         super(owner);
         setUndecorated(true);
-        setModal(false);
+        setModal(false); 
         setFocusableWindowState(true);
-        setAlwaysOnTop(true);
+        
         buildContent(mainFrame);
-        positionFullHeight(owner, preferredWidth);
+        
+        // Alineamos el panel justo debajo del botón "anchor" (el botón de usuario)
+        alinearConAncla(owner, anchor);
+        
+        // Si pinchas fuera, se cierra el menú
         addWindowFocusListener(new WindowAdapter() {
-            @Override public void windowLostFocus(WindowEvent e) { dispose(); }
+            @Override public void windowLostFocus(WindowEvent e) { 
+                // Evitamos que se cierre si el foco va al JOptionPane de confirmación
+                // (Esto a veces es tricky en Swing, pero con JDialog modal interno suele ir bien)
+            }
         });
+        
+        // Listener global de ratón para cerrar si clicamos fuera (más robusto que focus)
+        Toolkit.getDefaultToolkit().addAWTEventListener(event -> {
+            if (event instanceof MouseEvent && event.getID() == MouseEvent.MOUSE_PRESSED) {
+                MouseEvent me = (MouseEvent) event;
+                if (isVisible() && !getBounds().contains(me.getLocationOnScreen())) {
+                    // Verificamos que no sea un componente interno del dialogo (como el JOptionPane)
+                    Window w = SwingUtilities.windowForComponent((Component)me.getSource());
+                    if (w != this) {
+                        dispose();
+                    }
+                }
+            }
+        }, AWTEvent.MOUSE_EVENT_MASK);
     }
 
     private void buildContent(MainFrame mainFrame) {
         JPanel content = new JPanel();
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
-        content.setBackground(new Color(245, 245, 245));
-        content.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
+        content.setBackground(Color.WHITE);
+        content.setBorder(new LineBorder(new Color(200, 200, 200), 1));
 
-        JLabel title = new JLabel("Cuenta");
-        title.setFont(new Font("Arial", Font.BOLD, 18));
-        title.setAlignmentX(Component.RIGHT_ALIGNMENT);
-        content.add(title);
-        content.add(Box.createRigidArea(new Dimension(0, 12)));
+        // --- CABECERA ---
+        JPanel header = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 15));
+        header.setBackground(Color.WHITE);
+        header.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+        
+        JLabel title = new JLabel("MI CUENTA");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        title.setForeground(new Color(0, 70, 140));
+        header.add(title);
+        content.add(header);
+        
+        JSeparator sep = new JSeparator();
+        sep.setForeground(new Color(230,230,230));
+        sep.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
+        content.add(sep);
 
-        JButton perfil = new JButton("Perfil");
-        perfil.setAlignmentX(Component.RIGHT_ALIGNMENT);
-        perfil.addActionListener(e -> {
-            if (mainFrame != null) mainFrame.mostrarPanel("PERFIL");
+        // --- BOTONES ---
+        
+        JButton btnPerfil = crearBotonMenu("👤  Perfil");
+        btnPerfil.addActionListener(e -> {
+            if (mainFrame != null) mainFrame.mostrarPerfilConPestana(0);
             dispose();
         });
-        content.add(perfil);
-        content.add(Box.createRigidArea(new Dimension(0,8)));
 
-        JButton config = new JButton("Configuración");
-        config.setAlignmentX(Component.RIGHT_ALIGNMENT);
-        config.addActionListener(e -> {
-            if (mainFrame != null) mainFrame.mostrarPanel("CONFIG");
+        JButton btnHistorial = crearBotonMenu("📜  Historial");
+        btnHistorial.addActionListener(e -> {
+            if (mainFrame != null) mainFrame.mostrarPerfilConPestana(1);
             dispose();
         });
-        content.add(config);
-        content.add(Box.createVerticalGlue());
 
-        content.add(new JSeparator());
-        content.add(Box.createRigidArea(new Dimension(0,8)));
+        JButton btnLogout = crearBotonMenu("🚪  Cerrar Sesión");
+        btnLogout.setForeground(COLOR_ROJO);
+        
+        // --- AQUÍ ESTÁ LA LÓGICA QUE PEDISTE ---
+        btnLogout.addActionListener(e -> {
+            // Usamos 'this' como padre para que el aviso salga encima del menú
+            int opcion = JOptionPane.showConfirmDialog(this, 
+                "¿Estás seguro de que quieres cerrar la sesión?", 
+                "Cerrar Sesión", 
+                JOptionPane.YES_NO_OPTION, 
+                JOptionPane.QUESTION_MESSAGE);
 
-        JButton cerrar = new JButton("Cerrar sesión");
-        cerrar.setAlignmentX(Component.RIGHT_ALIGNMENT);
-        cerrar.addActionListener(e -> {
-            if (mainFrame != null) {
-                try {
-                    Method m = mainFrame.getClass().getMethod("cerrarSesion");
-                    m.invoke(mainFrame);
-                } catch (Exception ignored) {}
-                try { mainFrame.mostrarPantallaLoginRegistro(); } catch (Exception ignored) {}
+            if (opcion == JOptionPane.YES_OPTION) {
+                if (mainFrame != null) {
+                    mainFrame.cerrarSesion();
+                }
+                dispose(); // Cerramos el menú lateral
             }
-            dispose();
+            // Si elige NO, no hacemos nada y el menú sigue abierto
         });
-        content.add(cerrar);
+
+        content.add(btnPerfil);
+        content.add(btnHistorial);
+        
+        JSeparator sep2 = new JSeparator();
+        sep2.setForeground(new Color(230,230,230));
+        sep2.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
+        content.add(sep2);
+        
+        content.add(btnLogout);
+        content.add(Box.createVerticalGlue());
 
         setContentPane(content);
     }
 
-    private void positionFullHeight(Window owner, int preferredWidth) {
-        try {
-            Point s = owner.getLocationOnScreen();
-            int ownerTop = s.y;
-            int ownerLeft = s.x;
-            int ownerRight = ownerLeft + owner.getWidth();
-            int ownerBottom = ownerTop + owner.getHeight();
+    private JButton crearBotonMenu(String texto) {
+        JButton btn = new JButton(texto);
+        btn.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        btn.setForeground(COLOR_TEXTO);
+        btn.setBackground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setContentAreaFilled(true);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setHorizontalAlignment(SwingConstants.LEFT);
+        btn.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 5));
+        btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
 
-            int width = Math.min(preferredWidth, owner.getWidth());
-            int x = ownerRight - width;
-            if (x < ownerLeft) x = ownerLeft;
-            int y = ownerTop;
-            int height = ownerBottom - ownerTop;
-            setBounds(x, y, width, Math.max(0, height));
+        btn.addMouseListener(new MouseAdapter() {
+            @Override public void mouseEntered(MouseEvent e) { btn.setBackground(COLOR_HOVER); }
+            @Override public void mouseExited(MouseEvent e) { btn.setBackground(Color.WHITE); }
+        });
+        return btn;
+    }
+
+    private void alinearConAncla(Window owner, Component anchor) {
+        try {
+            Point pAnchor = anchor.getLocationOnScreen();
+            
+            int width = anchor.getWidth(); // Mismo ancho que el botón Login
+            int x = pAnchor.x;
+            int y = pAnchor.y + anchor.getHeight() + 2; 
+            
+            // Calculamos altura disponible hasta el fondo de la ventana
+            Point pOwner = owner.getLocationOnScreen();
+            int ownerBottom = pOwner.y + owner.getHeight();
+            int marginBottom = 20; 
+            
+            int height = ownerBottom - y - marginBottom;
+            
+            // Altura mínima y máxima estética
+            if (height < 150) height = 150;
+            if (height > 220) height = 220; // Limitamos alto para que quede compacto
+
+            setBounds(x, y, width, height);
+            
         } catch (IllegalComponentStateException ex) {
-            Rectangle b = owner.getBounds();
-            int width = Math.min(preferredWidth, b.width);
-            int x = b.x + b.width - width;
-            setBounds(x, b.y, width, b.height);
+            setSize(200, 300);
+            setLocationRelativeTo(owner);
         }
     }
 }

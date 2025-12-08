@@ -2,17 +2,16 @@ package Principal;
 
 import javax.swing.*;
 import java.awt.*;
-import Principal.*; // mantiene referencia a MainFrame si está en el mismo paquete
-import Principal.*; // no-op pero deja claro el paquete
+import java.awt.event.ActionListener;
+import Principal.*;
 
 public class HeaderPanel extends JPanel {
 
     private MainFrame mainFrame;
-    private JButton btnSalir;
+    private JButton btnNavegacion;
     private JLabel lblEmpresa;
 
-    // autenticación
-    private JPanel panelAuth;
+    private JPanel panelAuth; // ESTE SERÁ NUESTRA ANCLA
     private CardLayout cardLayoutAuth;
     private JButton btnLogin;
     private UserButton userButton;
@@ -24,25 +23,33 @@ public class HeaderPanel extends JPanel {
         this.setPreferredSize(new Dimension(0, 80));
         this.setBackground(new Color(0, 70, 140));
 
-        btnSalir = new JButton("Salir");
-        btnSalir.setPreferredSize(new Dimension(100, 40));
-        btnSalir.addActionListener(e -> { if (mainFrame != null) mainFrame.solicitarSalir(); });
-        this.add(btnSalir, BorderLayout.WEST);
+        // Botón Izquierdo
+        btnNavegacion = new JButton("Salir");
+        btnNavegacion.setPreferredSize(new Dimension(100, 40));
+        btnNavegacion.addActionListener(e -> mainFrame.accionBotonNavegacion());
+        this.add(btnNavegacion, BorderLayout.WEST);
 
+        // Título Central
         lblEmpresa = new JLabel("DEUSTO BUS F.R.");
         lblEmpresa.setFont(new Font("Arial", Font.BOLD, 26));
         lblEmpresa.setForeground(Color.WHITE);
         lblEmpresa.setHorizontalAlignment(SwingConstants.CENTER);
         this.add(lblEmpresa, BorderLayout.CENTER);
 
+        // Panel Derecho (Auth)
         cardLayoutAuth = new CardLayout();
         panelAuth = new JPanel(cardLayoutAuth);
         panelAuth.setOpaque(false);
-        panelAuth.setPreferredSize(new Dimension(160, 60));
+        
+        // ANCHO FIJO: Esto definirá el ancho del menú desplegable también
+        panelAuth.setPreferredSize(new Dimension(220, 60)); 
+        // Puedes cambiar 220 a lo que quieras, y el menú se adaptará.
 
         btnLogin = new JButton("Login");
         btnLogin.setPreferredSize(new Dimension(100, 40));
-        btnLogin.addActionListener(e -> { if (mainFrame != null) mainFrame.mostrarPantallaLoginRegistro(); });
+        btnLogin.addActionListener(e -> { 
+            if (mainFrame != null) mainFrame.mostrarPanel("LOGIN"); 
+        });
         panelAuth.add(btnLogin, "LOGOUT");
 
         userButton = new UserButton();
@@ -50,10 +57,21 @@ public class HeaderPanel extends JPanel {
         userButton.addActionListener(ae -> toggleUserSidePanel());
         panelAuth.add(userButton, "LOGIN");
 
-        this.add(panelAuth, BorderLayout.EAST);
-
-        // inicializar estado (si usas SessionManager, suscríbete allí; aquí se mantiene el método público actualizarVistaLogin)
+        // Añadimos un margen derecho para que no pegue con el borde de la ventana
+        JPanel wrapperRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        wrapperRight.setOpaque(false);
+        wrapperRight.add(panelAuth);
+        
+        this.add(wrapperRight, BorderLayout.EAST);
         actualizarVistaLogin(null);
+    }
+
+    public void configurarBotonNavegacion(boolean esMenuPrincipal) {
+        if (esMenuPrincipal) {
+            btnNavegacion.setText("Salir");
+        } else {
+            btnNavegacion.setText("← Atrás");
+        }
     }
 
     private void toggleUserSidePanel() {
@@ -68,13 +86,17 @@ public class HeaderPanel extends JPanel {
         }
         Window owner = mainFrame != null ? mainFrame : SwingUtilities.getWindowAncestor(this);
         if (owner == null) return;
-        userSidePanel = new UserSidePanel(owner, 280, mainFrame);
+        
+        // --- CAMBIO IMPORTANTE ---
+        // Pasamos 'panelAuth' como el componente ANCLA.
+        // El menú tendrá el mismo ancho y posición X que este panel.
+        userSidePanel = new UserSidePanel(owner, mainFrame, panelAuth);
         userSidePanel.setVisible(true);
     }
 
     public void actualizarVistaLogin(Usuario usuario) {
         if (usuario != null) {
-            userButton.setUsername(usuario.getNombre());
+            userButton.setUsuario(usuario);
             cardLayoutAuth.show(panelAuth, "LOGIN");
         } else {
             cardLayoutAuth.show(panelAuth, "LOGOUT");

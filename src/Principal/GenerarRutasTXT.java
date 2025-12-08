@@ -1,12 +1,13 @@
 package Principal;
 
-
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
 public class GenerarRutasTXT {
     public static void main(String[] args) {
+        // Tus datos originales (intactos)
         String[] bloques = {
             // --- Rutas del Norte ---
             "RUTA,A0,Bilbao - Gijón vía Santander",
@@ -47,7 +48,7 @@ public class GenerarRutasTXT {
             "Oporto,Vigo,95,11.00",
             "Vigo,A Coruna,120,13.00",
             "",
-            // --- Ruta muy larga (norte → centro) ---
+            // --- Ruta Gijon Madrid ---
             "RUTA,G1,Gijon - Oviedo - León - Valladolid - Madrid",
             "Gijon,Oviedo,35,4.00",
             "Oviedo,Leon,90,9.50",
@@ -56,12 +57,48 @@ public class GenerarRutasTXT {
             ""
         };
 
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter("rutas.txt"))) {
+        // Aseguramos que la carpeta exista
+        File carpeta = new File("resources/csv");
+        if (!carpeta.exists()) carpeta.mkdirs();
+
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter("resources/csv/rutas.csv"))) {
+            
+            String idRutaActual = "";
+            String descRutaActual = "";
+
             for (String s : bloques) {
-                bw.write(s);
-                bw.newLine();
+                s = s.trim();
+                if (s.isEmpty()) continue;
+
+                // Si es cabecera (RUTA,...) guardamos los datos para usarlos después
+                if (s.startsWith("RUTA,")) {
+                    String[] partes = s.split(",", 3);
+                    idRutaActual = partes[1].trim(); // Ejemplo: A0
+                    descRutaActual = partes[2].trim(); // Ejemplo: Bilbao - Gijón...
+                } 
+                // Si es un tramo normal (Bilbao,Santander...) lo escribimos en el CSV
+                else {
+                    String[] datos = s.split(",");
+                    if (datos.length >= 4) {
+                        String origen = datos[0].trim();
+                        String destino = datos[1].trim();
+                        String tiempo = datos[2].trim();
+                        String precio = datos[3].trim();
+
+                        // Construimos un nombre único: "A0: Bilbao - Santander"
+                        String nombreCompuesto = idRutaActual + ": " + origen + " - " + destino;
+
+                        // Escribimos en formato CSV estándar separado por punto y coma
+                        // Formato: Nombre;Descripcion;Origen;Destino;Duracion;Precio
+                        String lineaCSV = nombreCompuesto + ";" + descRutaActual + ";" + origen + ";" + destino + ";" + tiempo + ";" + precio;
+                        
+                        bw.write(lineaCSV);
+                        bw.newLine();
+                    }
+                }
             }
-            System.out.println("✅ Archivo rutas.txt generado correctamente.");
+            System.out.println("✅ Archivo resources/csv/rutas.csv generado correctamente.");
+            
         } catch (IOException e) {
             e.printStackTrace();
         }

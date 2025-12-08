@@ -4,7 +4,10 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class BonosPanel extends JPanel {
@@ -12,241 +15,186 @@ public class BonosPanel extends JPanel {
     private JTable tablaBonos;
     private BonosTableModel bonosModel;
     private JButton btnComprar;
-
     private JTable tablaDescripcion;
     private DefaultTableModel descripcionModel;
     private JScrollPane scrollDescripcion;
 
     public BonosPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
-
         setLayout(new BorderLayout());
         setBackground(new Color(245, 247, 250));
 
-        // --- Header ---
-        JPanel header = new JPanel();
+        // Header
+        JPanel header = new JPanel(new GridBagLayout());
         header.setBackground(Color.WHITE);
         header.setPreferredSize(new Dimension(0, 80));
-        header.setLayout(new GridBagLayout());
         header.setBorder(BorderFactory.createMatteBorder(0,0,1,0, Color.LIGHT_GRAY));
-        
         JLabel lblTitulo = new JLabel("Bonos y Abonos Disponibles");
         lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 26));
-        lblTitulo.setForeground(new Color(40, 40, 40));
-        
         header.add(lblTitulo);
         add(header, BorderLayout.NORTH);
 
-        // --- Datos ---
-        List<Bono> listaBonos = new ArrayList<>();
-        java.util.Calendar cal = java.util.Calendar.getInstance();
-        
-        cal.set(2025, 11, 31); // 31/12/2025
-        java.util.Date fecha2025 = cal.getTime();
-        
-        cal.set(2026, 7, 31);  // 31/08/2026
-        java.util.Date fecha2026 = cal.getTime();
-        
-        listaBonos.add(new Bono(1, "Bono Mensual", "Viajes ilimitados", 45.00, 30, fecha2025));
-        listaBonos.add(new Bono(2, "Bono 10 Viajes", "10 viajes sin caducidad", 12.50, 10, fecha2025));
-        listaBonos.add(new Bono(3, "Abono Joven", "Tarifa reducida (<26 años)", 25.00, 30, fecha2025));
-        listaBonos.add(new Bono(4, "Bono Turista", "72 horas ilimitadas", 18.00, 3, fecha2025));
-        listaBonos.add(new Bono(5, "Abono Verano", "Junio-Agosto especial", 60.00, 30, fecha2026));
+        List<Bono> listaBonos = cargarBonosDesdeBD();
 
-        // --- Modelo Principal ---
         bonosModel = new BonosTableModel(listaBonos);
         tablaBonos = new JTable(bonosModel);
-
         tablaBonos.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tablaBonos.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         tablaBonos.setRowHeight(28);
-        tablaBonos.setAutoCreateRowSorter(true);
-        tablaBonos.getTableHeader().setReorderingAllowed(false);
         tablaBonos.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
+        
+        // --- IMPLEMENTACIÓN: BLOQUEAR MOVIMIENTO DE COLUMNAS ---
+        tablaBonos.getTableHeader().setReorderingAllowed(false);
 
         tablaBonos.setDefaultRenderer(Object.class, new BonoRowRenderer());
         tablaBonos.setDefaultRenderer(Integer.class, new BonoRowRenderer());
         tablaBonos.setDefaultRenderer(Double.class, new BonoRowRenderer());
+        tablaBonos.setDefaultRenderer(java.util.Date.class, new BonoRowRenderer());
 
-        JScrollPane scrollPane = new JScrollPane(tablaBonos);
-        scrollPane.getViewport().setBackground(Color.WHITE);
-        add(scrollPane, BorderLayout.CENTER);
+        add(new JScrollPane(tablaBonos), BorderLayout.CENTER);
 
-        // --- Panel Inferior ---
         JPanel panelSur = new JPanel();
         panelSur.setLayout(new BoxLayout(panelSur, BoxLayout.Y_AXIS));
-        panelSur.setBackground(new Color(245, 247, 250));
-
-        // Tabla Descripción
-        String[] columnasDesc = {"ID", "Descripción Detallada"};
         
-        descripcionModel = new DefaultTableModel(columnasDesc, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) { return false; }
+        descripcionModel = new DefaultTableModel(new String[]{"ID", "Descripción"}, 0) {
+            @Override public boolean isCellEditable(int r, int c) { return false; }
         };
-        
         tablaDescripcion = new JTable(descripcionModel);
-        tablaDescripcion.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        tablaDescripcion.setRowHeight(90); // Altura para texto largo
-        tablaDescripcion.getTableHeader().setReorderingAllowed(false);
+        tablaDescripcion.setRowHeight(90);
         tablaDescripcion.getColumnModel().getColumn(0).setMaxWidth(60);
-        tablaDescripcion.getColumnModel().getColumn(0).setPreferredWidth(50);
         tablaDescripcion.setDefaultRenderer(Object.class, new DescripcionRowRenderer());
-
+        
         scrollDescripcion = new JScrollPane(tablaDescripcion);
-        scrollDescripcion.setPreferredSize(new Dimension(0, 250)); // Grande, como pediste
-        scrollDescripcion.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
+        scrollDescripcion.setPreferredSize(new Dimension(0, 150));
         panelSur.add(scrollDescripcion);
 
-        // Botón comprar
         btnComprar = new JButton("COMPRAR SELECCIONADO");
         btnComprar.setFont(new Font("Segoe UI", Font.BOLD, 16));
         btnComprar.setBackground(new Color(0, 70, 140));
         btnComprar.setForeground(Color.WHITE);
-        btnComprar.setFocusPainted(false);
-        btnComprar.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnComprar.addActionListener(e -> comprarBonoSeleccionado());
-
-        JPanel panelBotones = new JPanel();
-        panelBotones.setBackground(new Color(245, 247, 250));
-        panelBotones.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
-        panelBotones.add(btnComprar);
-
-        panelSur.add(panelBotones);
+        
+        JPanel pBtn = new JPanel(); 
+        pBtn.add(btnComprar);
+        panelSur.add(pBtn);
+        
         add(panelSur, BorderLayout.SOUTH);
 
-        // --- LISTENER CON TEXTOS LARGOS RESTAURADOS ---
         tablaBonos.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
-                int filaVista = tablaBonos.getSelectedRow();
-
-                if (filaVista != -1) {
-                    int filaModelo = tablaBonos.convertRowIndexToModel(filaVista);
-                    Bono b = bonosModel.getBonoAt(filaModelo);
-
-                    // Usamos HTML para permitir saltos de línea automáticos y formateo
-                    String textoExtra = switch (b.getId()) {
-                        case 1 -> "<html><b>BONO MENSUAL ESTÁNDAR:</b><br>" +
-                                  "La opción perfecta para el viajero frecuente. Disfruta de <b>viajes ilimitados</b> " +
-                                  "durante 30 días naturales consecutivos desde la primera validación. " +
-                                  "Olvídate de recargar y viaja sin preocupaciones.</html>";
-                                  
-                        case 2 -> "<html><b>BONO 10 VIAJES (MULTIPERSONAL):</b><br>" +
-                                  "Ideal si no viajas todos los días. Este título carga 10 viajes sin caducidad cercana. " +
-                                  "<b>¡Es compartible!</b> Puedes validarlo varias veces consecutivas para viajar con amigos o familiares. " +
-                                  "Permite transbordos gratuitos durante 60 minutos.</html>";
-                                  
-                        case 3 -> "<html><b>ABONO JOVEN (<26 AÑOS):</b><br>" +
-                                  "Tarifa plana súper reducida exclusiva para menores de 26 años. " +
-                                  "Acceso ilimitado a todas las zonas tarifarias. " +
-                                  "<i>Requisito indispensable:</i> Presentar DNI o tarjeta de residencia al validar.</html>";
-                                  
-                        case 4 -> "<html><b>BONO TURISTA (72 HORAS):</b><br>" +
-                                  "Diseñado para visitantes. Ofrece movilidad total e ilimitada durante 3 días consecutivos (72h). " +
-                                  "Incluye suplemento especial para trayectos al Aeropuerto y descuentos en museos concertados. " +
-                                  "Se activa automáticamente con el primer uso.</html>";
-                                  
-                        case 5 -> "<html><b>ABONO TEMPORADA VERANO:</b><br>" +
-                                  "Pase especial válido únicamente durante los meses de junio, julio y agosto. " +
-                                  "Permite acceso ilimitado a líneas de costa y zonas de ocio veraniego. " +
-                                  "<br><b>ESTADO: NO DISPONIBLE ACTUALMENTE (FUERA DE TEMPORADA).</b></html>";
-                                  
-                        default -> "Sin información detallada disponible para este bono.";
-                    };
-
+                int row = tablaBonos.getSelectedRow();
+                if (row != -1) {
+                    Bono b = bonosModel.getBonoAt(tablaBonos.convertRowIndexToModel(row));
+                    String texto = "<html><b>" + b.getNombre() + ":</b><br>" + 
+                                   b.getDescripcion() + "<br>" +
+                                   "<i>Validez tras validación: " + b.getDuracionDias() + " días.</i></html>";
+                    
                     descripcionModel.setRowCount(0);
-                    descripcionModel.addRow(new Object[]{b.getId(), textoExtra});
+                    descripcionModel.addRow(new Object[]{b.getId(), texto});
                 }
             }
         });
     }
 
+    private List<Bono> cargarBonosDesdeBD() {
+        List<Bono> lista = new ArrayList<>();
+        GestorBD gestor = new GestorBD();
+        Connection conn = gestor.getConnection();
+        SimpleDateFormat sdfBD = new SimpleDateFormat("yyyy-MM-dd");
+        String sql = "SELECT * FROM bono";
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while(rs.next()) {
+                int id = rs.getInt("id");
+                String nombre = rs.getString("nombre");
+                String desc = rs.getString("descripcion");
+                double precio = rs.getDouble("precio");
+                int viajes = rs.getInt("viajes_incluidos");
+                String fechaStr = rs.getString("fecha_expiracion");
+                int duracion = rs.getInt("duracion_dias");
+                Date fecha;
+                try { fecha = sdfBD.parse(fechaStr); } catch (Exception e) { fecha = new Date(); }
+                lista.add(new Bono(id, nombre, desc, precio, viajes, fecha, duracion));
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return lista;
+    }
+
     private void comprarBonoSeleccionado() {
-        int filaSeleccionadaEnVista = tablaBonos.getSelectedRow();
-        if (filaSeleccionadaEnVista == -1) {
-            JOptionPane.showMessageDialog(this, "Por favor, selecciona un bono...", "Error", JOptionPane.ERROR_MESSAGE);
-        } else {
-            int filaSeleccionadaEnModelo = tablaBonos.convertRowIndexToModel(filaSeleccionadaEnVista);
-            Bono bonoAComprar = bonosModel.getBonoAt(filaSeleccionadaEnModelo);
+        int row = tablaBonos.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Selecciona un bono.");
+            return;
+        }
 
-            if (bonoAComprar.getId() == 5) {
-                JOptionPane.showMessageDialog(this, "El 'Abono Verano' no está disponible para la compra.", "Bono no disponible", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
+        Bono b = bonosModel.getBonoAt(tablaBonos.convertRowIndexToModel(row));
 
-            String nombreBono = bonoAComprar.getNombre();
-            Double precio = bonoAComprar.getDescuento();
+        // --- IMPLEMENTACIÓN: BLOQUEO DE ABONO VERANO ---
+        if (b.getNombre().toUpperCase().contains("VERANO")) {
+            JOptionPane.showMessageDialog(this, 
+                "⛔ El " + b.getNombre() + " no está disponible actualmente.\n" +
+                "Este abono está fuera de temporada (Solo disponible Jun-Sept).", 
+                "Producto No Disponible", 
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
 
-            int opcion = JOptionPane.showConfirmDialog(
-                    this,
-                    "¿Deseas comprar el bono:\n\n" +
-                            "Bono: " + nombreBono + "\n" +
-                            "Precio: " + String.format("%.2f", precio) + "€\n",
-                    "Confirmar Compra",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.QUESTION_MESSAGE);
+        Usuario u = mainFrame.getUsuarioActual();
+        if (u == null) {
+            JOptionPane.showMessageDialog(this, "Debes iniciar sesión para comprar.");
+            mainFrame.mostrarPantallaLoginRegistro();
+            return;
+        }
 
-            if (opcion == JOptionPane.YES_OPTION) {
-                JOptionPane.showMessageDialog(this, "¡Bono '" + nombreBono + "' comprado!", "Compra Realizada", JOptionPane.INFORMATION_MESSAGE);
+        int opt = JOptionPane.showConfirmDialog(this, 
+            "Comprar " + b.getNombre() + "?\n" +
+            "Precio: " + b.getPrecio() + "€\n" +
+            "Tu saldo: " + String.format("%.2f €", u.getSaldo()),
+            "Confirmar Compra", JOptionPane.YES_NO_OPTION);
+            
+        if(opt == JOptionPane.YES_OPTION) {
+            UsuarioDAO dao = new UsuarioDAO();
+            boolean exito = dao.comprarBono(u, b);
+            
+            if (exito) {
+                JOptionPane.showMessageDialog(this, "¡Compra realizada! Nuevo saldo: " + String.format("%.2f €", u.getSaldo()));
+                mainFrame.actualizarSaldoHeader();
+            } else {
+                JOptionPane.showMessageDialog(this, "Saldo insuficiente. Recarga tu monedero.");
             }
         }
     }
 
+    // (Renderers igual que antes...)
     private class BonoRowRenderer extends DefaultTableCellRenderer {
-        private final Color COLOR_VERDE_SUAVE = new Color(200, 255, 200);
-        private final Color COLOR_ROJO_SUAVE = new Color(255, 200, 200);
-
-        @Override
-        public Component getTableCellRendererComponent(
-                JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-
-            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            setHorizontalAlignment(SwingConstants.CENTER);
-
-            if (!isSelected) {
-                c.setBackground(Color.WHITE);
-            } else {
-                int modelRow = table.convertRowIndexToModel(row);
-                Bono bono = bonosModel.getBonoAt(modelRow);
-                if (bono.getId() == 5) {
-                    c.setBackground(COLOR_ROJO_SUAVE);
-                } else {
-                    c.setBackground(COLOR_VERDE_SUAVE);
-                }
-                c.setForeground(Color.BLACK);
+        private final SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        @Override public Component getTableCellRendererComponent(JTable t, Object v, boolean s, boolean f, int r, int c) {
+            if(v instanceof Date) v = sdf.format((Date)v);
+            if(v instanceof Double) v = String.format("%.2f €", (Double)v);
+            Component comp = super.getTableCellRendererComponent(t, v, s, f, r, c);
+            setHorizontalAlignment(CENTER);
+            if(!s) {
+                Bono b = bonosModel.getBonoAt(t.convertRowIndexToModel(r));
+                comp.setBackground(b.getNombre().contains("Verano") ? new Color(255,200,200) : new Color(200,255,200));
+                comp.setForeground(Color.BLACK);
             }
-            return c;
+            return comp;
         }
     }
-
     private class DescripcionRowRenderer extends DefaultTableCellRenderer {
-        @Override
-        public Component getTableCellRendererComponent(
-                JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-
-            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            
-            if (column == 0) {
-                setHorizontalAlignment(SwingConstants.CENTER);
-                setVerticalAlignment(SwingConstants.CENTER);
+        @Override public Component getTableCellRendererComponent(JTable t, Object v, boolean s, boolean f, int r, int c) {
+            Component comp = super.getTableCellRendererComponent(t, v, s, f, r, c);
+            if (c == 0) { setHorizontalAlignment(CENTER); setVerticalAlignment(CENTER); }
+            else { setHorizontalAlignment(LEFT); setVerticalAlignment(TOP); }
+            Object id = t.getModel().getValueAt(r, 0);
+            if(id != null && id.toString().equals("5")) {
+                comp.setBackground(Color.YELLOW);
+                comp.setForeground(Color.BLACK);
             } else {
-                setHorizontalAlignment(SwingConstants.LEFT);
-                setVerticalAlignment(SwingConstants.TOP); 
+                comp.setBackground(Color.WHITE);
+                comp.setForeground(Color.BLACK);
             }
-
-            // Recuperar el ID de la primera columna
-            Object idValue = table.getModel().getValueAt(row, 0);
-            
-            // Lógica: Si es el bono 5 (Verano), pintar AMARILLO
-            if (idValue != null && idValue.toString().equals("5")) {
-                c.setBackground(Color.YELLOW);
-                c.setForeground(Color.BLACK);
-            } else {
-                c.setBackground(Color.WHITE);
-                c.setForeground(Color.BLACK);
-            }
-
-            return c;
+            return comp;
         }
     }
 }

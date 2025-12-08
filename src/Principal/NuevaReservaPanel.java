@@ -1,46 +1,35 @@
 package Principal;
-//uso de IAG para mejorar la estetica
+
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.PrintWriter;
-import java.util.List; // Importante
+import java.util.List;
 
 public class NuevaReservaPanel extends JPanel {
     private MainFrame mainFrame;
     private final GestorRutas gestor; 
     
-    // Componentes de selección
     private final JComboBox<String> cbOrigen;
     private final JComboBox<String> cbDestino;
     private final DefaultComboBoxModel<String> modeloDestino;
 
-    // Componentes del "Ticket Visual"
     private JPanel panelTicket;
     private JLabel lblTicketRuta;
     private JLabel lblTicketDuracion;
     private JLabel lblTicketPrecio;
     private JLabel lblTicketOrigenDestino;
     
-    // Datos actuales
     private double precioActual = 0.0;
 
-    // CONSTRUCTOR QUE ACEPTA MAINFRAME (Esto soluciona tu error)
     public NuevaReservaPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
         
-        // Instanciamos el GestorRutas. 
-        // Al usar el constructor vacío, no dibuja interfaz gráfica aquí, solo carga datos.
         gestor = new GestorRutas(); 
-        // Aseguramos carga de datos por si acaso el constructor vacío no lo hizo
-        gestor.cargarDesdeFichero("rutas.txt", null); 
+        gestor.cargarDesdeBD(null);  
 
         setLayout(new BorderLayout());
         setBackground(new Color(245, 247, 250));
 
-        // --- 1. Header ---
         JPanel header = new JPanel();
         header.setBackground(Color.WHITE);
         header.setPreferredSize(new Dimension(0, 80));
@@ -53,18 +42,15 @@ public class NuevaReservaPanel extends JPanel {
         header.add(title);
         add(header, BorderLayout.NORTH);
 
-        // --- 2. Panel Central (Formulario) ---
         JPanel centerPanel = new JPanel(new GridBagLayout());
         centerPanel.setOpaque(false);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 20, 10, 20);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Fuentes
         Font labelFont = new Font("Segoe UI", Font.BOLD, 14);
         Font comboFont = new Font("Segoe UI", Font.PLAIN, 16);
 
-        // -- Selectores --
         JLabel lblOrigen = new JLabel("Origen:");
         lblOrigen.setFont(labelFont);
         
@@ -82,10 +68,8 @@ public class NuevaReservaPanel extends JPanel {
         cbDestino.setBackground(Color.WHITE);
         cbDestino.setPreferredSize(new Dimension(300, 40));
 
-        // -- Panel Ticket --
         crearPanelTicket();
 
-        // -- Botón Confirmar --
         JButton btnReservar = new JButton("CONFIRMAR Y PAGAR");
         btnReservar.setFont(new Font("Segoe UI", Font.BOLD, 16));
         btnReservar.setBackground(new Color(0, 100, 200));
@@ -96,7 +80,6 @@ public class NuevaReservaPanel extends JPanel {
         btnReservar.setPreferredSize(new Dimension(250, 50));
         btnReservar.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // Layout
         gbc.gridx = 0; gbc.gridy = 0;
         centerPanel.add(lblOrigen, gbc);
         
@@ -120,15 +103,12 @@ public class NuevaReservaPanel extends JPanel {
 
         add(centerPanel, BorderLayout.CENTER);
 
-        // --- Lógica de Carga ---
-        cargarOrigenesValidos();
+        cargarOrigenesValidos(); 
 
-        // Listeners
         cbOrigen.addActionListener(e -> actualizarDestinos());
         cbDestino.addActionListener(e -> actualizarVistaTicket());
         btnReservar.addActionListener(e -> confirmarYGuardar());
 
-        // Inicialización
         if (cbOrigen.getItemCount() > 0) cbOrigen.setSelectedIndex(0);
         actualizarDestinos();
     }
@@ -136,7 +116,6 @@ public class NuevaReservaPanel extends JPanel {
     private void cargarOrigenesValidos() {
         List<String> todas = gestor.getTodasParadas();
         for (String parada : todas) {
-            // Solo añadimos al combo si hay rutas saliendo de aquí
             if (!gestor.getDestinosDirectosDesde(parada).isEmpty()) {
                 cbOrigen.addItem(parada);
             }
@@ -152,7 +131,6 @@ public class NuevaReservaPanel extends JPanel {
         ));
         panelTicket.setPreferredSize(new Dimension(400, 140));
         
-        // Sombra simulada (borde inferior grueso)
         panelTicket.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createMatteBorder(0, 0, 4, 0, new Color(220, 220, 220)),
             panelTicket.getBorder()
@@ -225,7 +203,6 @@ public class NuevaReservaPanel extends JPanel {
 
     private void actualizarVistaTicket() {
         String selected = (String) cbDestino.getSelectedItem();
-        
         if (selected == null || selected.startsWith("--")) {
             panelTicket.setVisible(false);
             return;
@@ -233,7 +210,6 @@ public class NuevaReservaPanel extends JPanel {
 
         try {
             String origen = (String) cbOrigen.getSelectedItem();
-            // Parseamos el toString de OpcionDestino: "Destino (ID) — min — precio"
             String[] partes = selected.split("—"); 
 
             String destinoLimpio = partes[0].split("\\(")[0].trim();
@@ -262,12 +238,20 @@ public class NuevaReservaPanel extends JPanel {
             JOptionPane.showMessageDialog(this, "Por favor, selecciona un trayecto válido.", "Información incompleta", JOptionPane.WARNING_MESSAGE);
             return;
         }
+
+        Usuario usuario = mainFrame.getUsuarioActual();
+        if (usuario == null) {
+            JOptionPane.showMessageDialog(this, "Debes iniciar sesión para realizar una reserva.");
+            mainFrame.mostrarPantallaLoginRegistro();
+            return;
+        }
         
         int respuesta = JOptionPane.showConfirmDialog(
             this, 
             "Estás a punto de comprar el siguiente billete:\n\n" +
             "Viaje: " + lblTicketOrigenDestino.getText() + "\n" +
             "Precio: " + lblTicketPrecio.getText() + "\n\n" +
+            "Tu saldo: " + String.format("%.2f €", usuario.getSaldo()) + "\n" +
             "¿Deseas confirmar el pago?",
             "Confirmar Compra",
             JOptionPane.YES_NO_OPTION,
@@ -275,11 +259,18 @@ public class NuevaReservaPanel extends JPanel {
         );
 
         if (respuesta == JOptionPane.YES_OPTION) {
-            try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter("reservas.txt", true)))) {
-                pw.println(lblTicketOrigenDestino.getText() + " | " + lblTicketPrecio.getText());
-                JOptionPane.showMessageDialog(this, "✅ ¡Reserva realizada con éxito!\nBuen viaje.", "Confirmado", JOptionPane.INFORMATION_MESSAGE);
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(this, "Error al guardar la reserva en el sistema.", "Error Crítico", JOptionPane.ERROR_MESSAGE);
+            UsuarioDAO dao = new UsuarioDAO();
+            String precioStr = lblTicketPrecio.getText().replace("€","").replace("💶","").replace(",", ".").trim();
+            double precio = Double.parseDouble(precioStr);
+
+            boolean exito = dao.guardarReserva(usuario, lblTicketOrigenDestino.getText(), precio);
+
+            if (exito) {
+                JOptionPane.showMessageDialog(this, "✅ ¡Reserva realizada con éxito!\nBuen viaje.\nNuevo saldo: " + String.format("%.2f €", usuario.getSaldo()), "Confirmado", JOptionPane.INFORMATION_MESSAGE);
+                // REFRESCAR HEADER
+                mainFrame.actualizarSaldoHeader();
+            } else {
+                JOptionPane.showMessageDialog(this, "❌ Saldo insuficiente para realizar esta operación.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
