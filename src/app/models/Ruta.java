@@ -1,4 +1,4 @@
-package Principal;
+package app.models;
 
 /**
  * Clase modelo para representar una ruta de viaje

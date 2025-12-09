@@ -1,5 +1,7 @@
-package Principal;
+package app.ui;
 
+import app.dao.UsuarioDAO;
+import app.models.Usuario;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;

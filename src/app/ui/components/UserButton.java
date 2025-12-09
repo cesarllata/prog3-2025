@@ -1,5 +1,6 @@
-package Principal;
+package app.ui.components;
 
+import app.models.Usuario;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;

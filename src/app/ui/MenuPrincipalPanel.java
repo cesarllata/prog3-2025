@@ -1,5 +1,6 @@
-package Principal;
+package app.ui;
 
+import app.ui.components.HiloInformativo;
 import javax.swing.*;
 import java.awt.*;
 

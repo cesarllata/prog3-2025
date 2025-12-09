@@ -1,4 +1,7 @@
-package Principal;
+package app;
+
+import app.database.GestorBD;
+import app.ui.MainFrame;
 import javax.swing.*;
 
 public class Main {

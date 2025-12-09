@@ -1,4 +1,4 @@
-package Principal;
+package app.models;
 
 import java.util.Date;
 

@@ -1,5 +1,6 @@
-package Principal;
+package app.ui;
 
+import app.database.GestorBD;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -7,7 +8,6 @@ import java.awt.geom.Line2D;
 import java.sql.*; // Importante para la BD
 import java.util.*;
 import java.util.List;
-import java.util.ArrayList;
 
 public class GestorRutas extends JPanel {
     private MainFrame mainFrame;

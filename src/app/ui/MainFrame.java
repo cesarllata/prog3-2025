@@ -1,4 +1,4 @@
-package Principal;
+package app.ui;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,7 +10,7 @@ public class MainFrame extends JFrame {
     private CardLayout cardLayout;
     private JPanel panelContenedor;
     private HeaderPanel headerPanel;
-    private Usuario usuarioActual;
+    private app.models.Usuario usuarioActual;
     private String panelActual;
     
     // Necesitamos referencia a este panel para cambiar pestañas
@@ -95,9 +95,9 @@ public class MainFrame extends JFrame {
         }
     }
 
-    public Usuario getUsuarioActual() { return usuarioActual; }
+    public app.models.Usuario getUsuarioActual() { return usuarioActual; }
 
-    public void loginExitoso(Usuario usuario) {
+    public void loginExitoso(app.models.Usuario usuario) {
         this.usuarioActual = usuario;
         headerPanel.actualizarVistaLogin(usuario);
         mostrarPanel("MENU");

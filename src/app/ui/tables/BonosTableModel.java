@@ -1,5 +1,6 @@
-package Principal;
+package app.ui.tables;
 
+import app.models.Bono;
 import javax.swing.table.AbstractTableModel;
 import java.util.List;
 

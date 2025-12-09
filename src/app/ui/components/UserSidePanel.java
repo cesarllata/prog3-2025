@@ -1,4 +1,6 @@
-package Principal;
+package app.ui.components;
+
+import app.ui.MainFrame;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;

@@ -1,9 +1,10 @@
-package Principal;
+package app.ui;
 
+import app.models.Usuario;
+import app.ui.components.UserButton;
+import app.ui.components.UserSidePanel;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
-import Principal.*;
 
 public class HeaderPanel extends JPanel {
 
@@ -43,7 +44,6 @@ public class HeaderPanel extends JPanel {
         
         // ANCHO FIJO: Esto definirá el ancho del menú desplegable también
         panelAuth.setPreferredSize(new Dimension(220, 60)); 
-        // Puedes cambiar 220 a lo que quieras, y el menú se adaptará.
 
         btnLogin = new JButton("Login");
         btnLogin.setPreferredSize(new Dimension(100, 40));

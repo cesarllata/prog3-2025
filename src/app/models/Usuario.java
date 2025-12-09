@@ -1,4 +1,4 @@
-package Principal;
+package app.models;
 
 public class Usuario {
     private int id;

@@ -1,10 +1,18 @@
-package Principal;
+package app.ui;
+
+import app.models.Bono;
+import app.models.Usuario;
+import app.dao.UsuarioDAO;
+import app.database.GestorBD;
+import app.ui.tables.BonosTableModel;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;

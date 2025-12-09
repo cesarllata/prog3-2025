@@ -1,5 +1,7 @@
-package Principal;
+package app.ui;
 
+import app.dao.UsuarioDAO;
+import app.models.Usuario;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
@@ -260,7 +262,7 @@ public class NuevaReservaPanel extends JPanel {
 
         if (respuesta == JOptionPane.YES_OPTION) {
             UsuarioDAO dao = new UsuarioDAO();
-            String precioStr = lblTicketPrecio.getText().replace("€","").replace("💶","").replace(",", ".").trim();
+                String precioStr = lblTicketPrecio.getText().replace("€", "").replace("💶", "").replace(",", ".").trim();
             double precio = Double.parseDouble(precioStr);
 
             boolean exito = dao.guardarReserva(usuario, lblTicketOrigenDestino.getText(), precio);

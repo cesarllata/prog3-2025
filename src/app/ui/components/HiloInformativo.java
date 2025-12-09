@@ -1,4 +1,4 @@
-package Principal;
+package app.ui.components;
 
 import javax.swing.*;
 import java.awt.*;
