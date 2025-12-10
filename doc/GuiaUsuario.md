@@ -103,6 +103,8 @@ Credenciales de ejemplo (para probar rápidamente)
 - admin@deustobus.com — admin123
 - juan@gmail.com — 1234
 - maria@hotmail.com — maria123
+- cesar — ce
+- julen.anda@opendeusto.es — 1234
 
 Usa una de esas cuentas para comprobar que la importación desde CSV ha funcionado correctamente.
 
@@ -113,5 +115,10 @@ Cómo usar los eventos (instrucciones simples)
 - Menú lateral (ratón): pasa el ratón por encima de las opciones para verlas resaltadas; haz click en una opción para que se ejecute (p. ej. "Perfil", "Historial", "Cerrar Sesión"). Haz click fuera del menú para cerrarlo (comportamiento "clic fuera cierra menú").
 - Activación por teclado: si un botón tiene foco puedes pulsar ENTER o SPACE para activarlo; usa TAB para moverte entre controles del formulario.
 
+- Además pulsar ctrl W permite volver a la ventana anterior(siempre que no se esté en el menu principal).
 
+--------------------------------------------------------------------------------
+							PRÓXIMOS PASOS
+
+Como próximos pasos, con intención de añadir un filtro recursivo, trataremos de buscar la ruta más óptima a nivel de tiempo y dinero, de forma que nos indicará como podemos ir de un punto A a un punto B aunque no pertenezca a la misma ruta de bus.
 
