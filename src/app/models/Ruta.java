@@ -1,63 +1,26 @@
 package app.models;
 
 /**
- * Clase modelo para representar una ruta de viaje
- * Cuenta con getters y setters para ser compatible con JDBC
+ * Clase modelo para representar un tramo de viaje.
+ * Utilizada por el buscador recursivo para calcular rutas complejas.
  */
 public class Ruta {
-    private int id;
-    private String nombre;
-    private String descripcion;
     private String origen;
     private String destino;
-    private int duracion;  // en minutos
     private double precio;
+    private int duracionHoras;
 
     /**
-     * Constructor vacío requerido por JDBC/DAO
+     * Constructor completo requerido para la búsqueda recursiva y filtros.
      */
-    public Ruta() {
-    }
-
-    /**
-     * Constructor con parámetros principales
-     */
-    public Ruta(String nombre, String descripcion, String origen, String destino, int duracion, double precio) {
-        this.nombre = nombre;
-        this.descripcion = descripcion;
+    public Ruta(String origen, String destino, double precio, int duracionHoras) {
         this.origen = origen;
         this.destino = destino;
-        this.duracion = duracion;
         this.precio = precio;
+        this.duracionHoras = duracionHoras;
     }
 
-    /**
-     * Constructor completo con ID
-     */
-    public Ruta(int id, String nombre, String descripcion, String origen, String destino, int duracion, double precio) {
-        this.id = id;
-        this.nombre = nombre;
-        this.descripcion = descripcion;
-        this.origen = origen;
-        this.destino = destino;
-        this.duracion = duracion;
-        this.precio = precio;
-    }
-
-    // ===== GETTERS =====
-
-    public int getId() {
-        return id;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public String getDescripcion() {
-        return descripcion;
-    }
-
+    // --- GETTERS ---
     public String getOrigen() {
         return origen;
     }
@@ -66,53 +29,22 @@ public class Ruta {
         return destino;
     }
 
-    public int getDuracion() {
-        return duracion;
-    }
-
     public double getPrecio() {
         return precio;
     }
 
-    // ===== SETTERS =====
-
-    public void setId(int id) {
-        this.id = id;
+    public int getDuracionHoras() {
+        return duracionHoras;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
-
-    public void setOrigen(String origen) {
-        this.origen = origen;
-    }
-
-    public void setDestino(String destino) {
-        this.destino = destino;
-    }
-
-    public void setDuracion(int duracion) {
-        this.duracion = duracion;
-    }
-
-    public void setPrecio(double precio) {
-        this.precio = precio;
-    }
+    // --- SETTERS (Opcionales) ---
+    public void setOrigen(String origen) { this.origen = origen; }
+    public void setDestino(String destino) { this.destino = destino; }
+    public void setPrecio(double precio) { this.precio = precio; }
+    public void setDuracionHoras(int duracionHoras) { this.duracionHoras = duracionHoras; }
 
     @Override
     public String toString() {
-        return "Ruta{" +
-                "id=" + id +
-                ", nombre='" + nombre + '\'' +
-                ", origen='" + origen + '\'' +
-                ", destino='" + destino + '\'' +
-                ", duracion=" + duracion + " min" +
-                ", precio=$" + precio +
-                '}';
+        return origen + " -> " + destino + " (" + precio + "€, " + duracionHoras + "h)";
     }
 }
