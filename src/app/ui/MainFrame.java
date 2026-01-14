@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
+/* Uso de IAG para acelerar tareas de desarrollo */
 public class MainFrame extends JFrame {
 
     private CardLayout cardLayout;

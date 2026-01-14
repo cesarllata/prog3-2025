@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/* Uso de IAG para acelerar tareas de desarrollo */
 public class UsuarioDAO {
 
     private Connection conn;

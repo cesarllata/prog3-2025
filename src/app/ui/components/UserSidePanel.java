@@ -7,6 +7,7 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.*;
 
+/* Uso de IAG para acelerar tareas de desarrollo */
 public class UserSidePanel extends JDialog {
 
     private final Color COLOR_HOVER = new Color(230, 240, 255);

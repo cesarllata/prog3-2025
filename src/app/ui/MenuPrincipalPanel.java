@@ -4,6 +4,7 @@ import app.ui.components.HiloInformativo;
 import javax.swing.*;
 import java.awt.*;
 
+/* Uso de IAG para acelerar tareas de desarrollo */
 public class MenuPrincipalPanel extends JPanel {
 
     private MainFrame mainFrame;

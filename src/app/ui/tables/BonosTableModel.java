@@ -4,6 +4,7 @@ import app.models.Bono;
 import javax.swing.table.AbstractTableModel;
 import java.util.List;
 
+/* Uso de IAG para acelerar tareas de desarrollo */
 public class BonosTableModel extends AbstractTableModel {
 
     private List<Bono> bonos;

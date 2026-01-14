@@ -6,6 +6,7 @@ import java.awt.*;
 /**
  * Componente que muestra un texto informativo desplazándose de derecha a izquierda en bucle.
  */
+/* Uso de IAG para acelerar tareas de desarrollo */
 public class HiloInformativo extends JComponent {
     private final String texto;
     private final Font font;

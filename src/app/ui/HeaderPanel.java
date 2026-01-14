@@ -6,6 +6,7 @@ import app.ui.components.UserSidePanel;
 import javax.swing.*;
 import java.awt.*;
 
+/* Uso de IAG para acelerar tareas de desarrollo */
 public class HeaderPanel extends JPanel {
 
     private MainFrame mainFrame;

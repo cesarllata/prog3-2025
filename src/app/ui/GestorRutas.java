@@ -10,6 +10,7 @@ import java.sql.*;
 import java.util.*;
 import java.util.List;
 
+/* Uso de IAG para acelerar tareas de desarrollo */
 public class GestorRutas extends JPanel {
 
     private MainFrame mainFrame;

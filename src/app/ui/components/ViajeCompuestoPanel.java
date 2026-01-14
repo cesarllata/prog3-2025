@@ -7,6 +7,7 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.util.List;
 
+/* Uso de IAG para acelerar tareas de desarrollo */
 public class ViajeCompuestoPanel extends JPanel {
 
     public ViajeCompuestoPanel(List<Ruta> escalas) {

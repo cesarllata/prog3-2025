@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.sql.*;
 import java.util.Properties;
 
+/* Uso de IAG para acelerar tareas de desarrollo */
 public class GestorBD {
 
     private static final String PROPERTIES_FILE = "resources/config.properties";

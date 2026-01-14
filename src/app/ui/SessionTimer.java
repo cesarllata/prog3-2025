@@ -8,6 +8,7 @@ import javax.swing.*;
  *  - Seguir sesión (restablece la cuenta a la duración inicial)
  *  - Cerrar sesión y salir (cierra sesión y finaliza la aplicación)
  */
+/* Uso de IAG para acelerar tareas de desarrollo */
 public class SessionTimer {
 
     private final MainFrame mainFrame;

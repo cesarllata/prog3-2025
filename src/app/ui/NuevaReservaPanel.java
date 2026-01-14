@@ -10,6 +10,7 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.util.List;
 
+/* Uso de IAG para acelerar tareas de desarrollo */
 public class NuevaReservaPanel extends JPanel {
     private MainFrame mainFrame;
     private final GestorRutas gestor; 

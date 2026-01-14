@@ -3,6 +3,7 @@ package app.logic;
 import app.models.Ruta;
 import java.util.*;
 
+/* Uso de IAG para acelerar tareas de desarrollo */
 public class BuscadorRecursivo {
     private List<Ruta> todasLasRutas;
 

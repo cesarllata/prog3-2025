@@ -7,6 +7,7 @@ import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
+/* Uso de IAG para acelerar tareas de desarrollo */
 public class RegistroPanel extends JPanel {
     private MainFrame mainFrame;
 

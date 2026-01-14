@@ -4,6 +4,7 @@ import app.database.GestorBD;
 import app.ui.MainFrame;
 import javax.swing.*;
 
+
 public class Main {
     public static void main(String[] args) {
         // 1. Instanciar gestor

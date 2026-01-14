@@ -4,6 +4,8 @@ package app.models;
  * Clase modelo para representar un tramo de viaje.
  * Utilizada por el buscador recursivo para calcular rutas complejas.
  */
+
+
 public class Ruta {
     private String origen;
     private String destino;

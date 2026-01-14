@@ -7,6 +7,7 @@ import java.awt.event.*;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/* Uso de IAG para acelerar tareas de desarrollo */
 public class UserButton extends JPanel {
     private final ProfileAvatar avatar;
     private final JLabel lblName;

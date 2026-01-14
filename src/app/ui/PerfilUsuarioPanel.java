@@ -9,6 +9,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.List;
 
+/* Uso de IAG para acelerar tareas de desarrollo */
 public class PerfilUsuarioPanel extends JPanel {
     private MainFrame mainFrame;
 

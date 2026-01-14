@@ -5,6 +5,7 @@ import app.models.Usuario;
 import javax.swing.*;
 import java.awt.*;
 
+/* Uso de IAG para acelerar tareas de desarrollo */
 public class LoginPanel extends JPanel {
     private MainFrame mainFrame;
 
