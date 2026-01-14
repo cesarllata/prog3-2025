@@ -118,7 +118,40 @@ Cómo usar los eventos (instrucciones simples)
 - Además pulsar ctrl W permite volver a la ventana anterior(siempre que no se esté en el menu principal).
 
 --------------------------------------------------------------------------------
-							PRÓXIMOS PASOS
+							NOVEDADES RESPECTO A LA ANTERIOR ENTREGA 							
 
-Como próximos pasos, con intención de añadir un filtro recursivo, trataremos de buscar la ruta más óptima a nivel de tiempo y dinero, de forma que nos indicará como podemos ir de un punto A a un punto B aunque no pertenezca a la misma ruta de bus.
+Como próximos pasos, se han añadido y documentado dos mejoras importantes en la aplicación: la búsqueda recursiva de rutas y un hilo que controla la duración de la sesión de usuario.
+
+1) Búsqueda recursiva de rutas
+
+- Objetivo: permitir que el usuario solicite un trayecto desde un punto A hasta un punto B aunque no exista una única ruta directa. El algoritmo explora combinaciones de rutas disponibles para proponer itinerarios que optimicen tiempo y/o coste.
+- Implementación (archivo relevante): `src/app/logic/BuscadorRecursivo.java`.
+- Entrada / salida:
+  - Entrada: origen, destino, lista de rutas disponibles (cada ruta contiene origen, destino, duración y precio), y parámetros de búsqueda (p. ej. criterio: "menor tiempo" o "menor precio").
+  - Salida: una o varias secuencias de tramos (lista de rutas encadenadas) con su coste total y duración estimada.
+- Comportamiento esperado:
+  - El buscador realiza una exploración recursiva (tipo DFS con poda) sobre el grafo formado por las paradas/estaciones y las rutas.
+  - Se evita ciclos comprobando las paradas ya visitadas en la rama actual.
+  - Para mantener un rendimiento aceptable se usa un límite de profundidad o un tope sobre el número máximo de combinaciones a considerar.
+  - Devuelve la mejor solución según el criterio indicado; si no existe camino posible, informa al usuario con un mensaje claro.
+- Notas de uso y rendimiento:
+  - En grafos pequeños/medianos (con las rutas típicas del CSV de ejemplo) la búsqueda completa es rápida. En grafos grandes se recomienda usar heurísticas (p. ej. ordenar vecinos por coste/tiempo) o cambiar a un algoritmo con garantía óptima como Dijkstra/A* si se dispone de un peso consistente.
+  - El diseño actual mantiene la lógica separada de la UI: `BuscadorRecursivo` expone métodos que reciben datos y devuelven resultados, y el panel de Rutas procesa y muestra las soluciones.
+
+2) Hilo contador de duración de sesión
+
+- Objetivo: llevar un contador en segundo plano que muestre al usuario el tiempo transcurrido desde que inició sesión y que permita acciones adicionales (p. ej. aviso de inactividad, cierre automático tras un tiempo límite).
+- Implementación (archivo relevante): `src/app/ui/SessionTimer.java`.
+- Comportamiento:
+  - Al iniciar sesión se crea y arranca un hilo (Runnable) que aumenta un contador cada segundo.
+  - El hilo actualiza la interfaz (por ejemplo una etiqueta en `HeaderPanel` o `MainFrame`) utilizando `SwingUtilities.invokeLater(...)` para garantizar que las actualizaciones de la UI se realizan en el hilo de despacho de eventos (EDT).
+  - El contador puede mostrar el tiempo en formato HH:MM:SS y ofrece métodos para pausar, reiniciar o detener el contador cuando el usuario cierra sesión.
+  - Opcionalmente, se configura un umbral de inactividad: si el contador supera el tiempo máximo permitido, el hilo puede ejecutar la rutina de cierre de sesión (notificando al usuario antes de desconectarlo).
+- Buenas prácticas aplicadas:
+  - Evitar operaciones pesadas dentro del hilo del contador; este solo debe medir y publicar el tiempo transcurrido.
+  - Las acciones que modifican el modelo o la base de datos deben delegarse al hilo principal o a tareas separadas con manejo explícito de concurrencia.
+
+Resumen
+
+Estas dos mejoras (búsqueda recursiva y contador de sesión) están pensadas para mejorar la experiencia del usuario: la búsqueda recursiva amplía la capacidad de encontrar combinaciones de rutas entre puntos no conectados directamente; el hilo de sesión aporta visibilidad sobre la duración de la sesión y facilita políticas de seguridad (p. ej. auto-logout por inactividad). En futuras iteraciones se podrá afinar la heurística del buscador y añadir opciones en la UI para configurar el tiempo máximo de sesión.
 
