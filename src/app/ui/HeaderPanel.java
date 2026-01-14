@@ -19,7 +19,7 @@ public class HeaderPanel extends JPanel {
     private UserSidePanel userSidePanel;
     private JLabel lblCuentaAtras;
     private JLabel lblExpiraTexto;
-    private JPanel sessionPanel;
+    private JPanel bottomPanel;
 
     public HeaderPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
@@ -57,25 +57,9 @@ public class HeaderPanel extends JPanel {
     userButton.setBackground(btnLogin.getBackground());
     userButton.addActionListener(ae -> toggleUserSidePanel());
 
-    // Construir el panel que se mostrará en el estado LOGIN: cuenta + userButton
-    sessionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 10));
-    sessionPanel.setOpaque(false);
-
-    lblExpiraTexto = new JLabel("La sesión expira en:");
-    lblExpiraTexto.setForeground(Color.WHITE);
-    lblExpiraTexto.setFont(new Font("Arial", Font.PLAIN, 13));
-    lblExpiraTexto.setVisible(true);
-    sessionPanel.add(lblExpiraTexto);
-
-    lblCuentaAtras = new JLabel("01:00:00");
-    lblCuentaAtras.setForeground(Color.WHITE);
-    lblCuentaAtras.setFont(new Font("Arial", Font.BOLD, 13));
-    lblCuentaAtras.setVisible(true);
-    sessionPanel.add(lblCuentaAtras);
-
+    // Construir el panel que se mostrará en el estado LOGIN: sólo el userButton
     JPanel loginCard = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 10));
     loginCard.setOpaque(false);
-    loginCard.add(sessionPanel);
     loginCard.add(userButton);
     panelAuth.add(loginCard, "LOGIN");
 
@@ -103,6 +87,23 @@ public class HeaderPanel extends JPanel {
 
             this.add(topPanel, BorderLayout.NORTH);
 
+        // Fila inferior centrada: texto + contador (oculto por defecto)
+        bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 6));
+        bottomPanel.setOpaque(false);
+
+        lblExpiraTexto = new JLabel("La sesión expira en:");
+        lblExpiraTexto.setForeground(Color.WHITE);
+        lblExpiraTexto.setFont(new Font("Arial", Font.PLAIN, 13));
+        bottomPanel.add(lblExpiraTexto);
+
+        lblCuentaAtras = new JLabel("01:00:00");
+        lblCuentaAtras.setForeground(Color.WHITE);
+        lblCuentaAtras.setFont(new Font("Arial", Font.BOLD, 13));
+        bottomPanel.add(lblCuentaAtras);
+
+        bottomPanel.setVisible(false); // se mostrará al hacer login
+        this.add(bottomPanel, BorderLayout.SOUTH);
+
         actualizarVistaLogin(null);
     }
 
@@ -115,7 +116,7 @@ public class HeaderPanel extends JPanel {
 
     // Mostrar u ocultar el contador
     public void mostrarCuentaAtras(boolean visible) {
-        if (sessionPanel != null) sessionPanel.setVisible(visible);
+        if (bottomPanel != null) bottomPanel.setVisible(visible);
     }
 
     public void configurarBotonNavegacion(boolean esMenuPrincipal) {
