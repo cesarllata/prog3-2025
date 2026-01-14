@@ -62,7 +62,8 @@ public class MainFrame extends JFrame {
             sessionTimer = new app.SessionTimer(this, 3600);
         }
         sessionTimer.start();
-        headerPanel.mostrarCuentaAtras(true);
+        // Mostrar la cuenta atrás solo cuando haya sesión iniciada
+        headerPanel.mostrarCuentaAtras(false);
     }
 
     // MÉTODO NUEVO: Muestra el perfil y selecciona la pestaña correcta
@@ -111,6 +112,7 @@ public class MainFrame extends JFrame {
         headerPanel.actualizarVistaLogin(usuario);
         mostrarPanel("MENU");
         // Nota: el temporizador ya arranca al iniciar la app (o al crear MainFrame)
+        headerPanel.mostrarCuentaAtras(true);
     }
 
     public void actualizarSaldoHeader() {

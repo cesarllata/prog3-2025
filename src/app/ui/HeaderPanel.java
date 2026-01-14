@@ -19,7 +19,7 @@ public class HeaderPanel extends JPanel {
     private UserSidePanel userSidePanel;
     private JLabel lblCuentaAtras;
     private JLabel lblExpiraTexto;
-        private JPanel bottomPanel;
+    private JPanel sessionPanel;
 
     public HeaderPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
@@ -30,15 +30,13 @@ public class HeaderPanel extends JPanel {
         // Botón Izquierdo
         btnNavegacion = new JButton("Salir");
         btnNavegacion.setPreferredSize(new Dimension(100, 40));
-        btnNavegacion.addActionListener(e -> mainFrame.accionBotonNavegacion());
-        this.add(btnNavegacion, BorderLayout.WEST);
+    btnNavegacion.addActionListener(e -> mainFrame.accionBotonNavegacion());
 
         // Título Central
         lblEmpresa = new JLabel("DEUSTO BUS F.R.");
         lblEmpresa.setFont(new Font("Arial", Font.BOLD, 26));
         lblEmpresa.setForeground(Color.WHITE);
-        lblEmpresa.setHorizontalAlignment(SwingConstants.CENTER);
-        this.add(lblEmpresa, BorderLayout.CENTER);
+    lblEmpresa.setHorizontalAlignment(SwingConstants.CENTER);
 
         // Panel Derecho (Auth)
         cardLayoutAuth = new CardLayout();
@@ -55,10 +53,31 @@ public class HeaderPanel extends JPanel {
         });
         panelAuth.add(btnLogin, "LOGOUT");
 
-        userButton = new UserButton();
-        userButton.setBackground(btnLogin.getBackground());
-        userButton.addActionListener(ae -> toggleUserSidePanel());
-        panelAuth.add(userButton, "LOGIN");
+    userButton = new UserButton();
+    userButton.setBackground(btnLogin.getBackground());
+    userButton.addActionListener(ae -> toggleUserSidePanel());
+
+    // Construir el panel que se mostrará en el estado LOGIN: cuenta + userButton
+    sessionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 10));
+    sessionPanel.setOpaque(false);
+
+    lblExpiraTexto = new JLabel("La sesión expira en:");
+    lblExpiraTexto.setForeground(Color.WHITE);
+    lblExpiraTexto.setFont(new Font("Arial", Font.PLAIN, 13));
+    lblExpiraTexto.setVisible(true);
+    sessionPanel.add(lblExpiraTexto);
+
+    lblCuentaAtras = new JLabel("01:00:00");
+    lblCuentaAtras.setForeground(Color.WHITE);
+    lblCuentaAtras.setFont(new Font("Arial", Font.BOLD, 13));
+    lblCuentaAtras.setVisible(true);
+    sessionPanel.add(lblCuentaAtras);
+
+    JPanel loginCard = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 10));
+    loginCard.setOpaque(false);
+    loginCard.add(sessionPanel);
+    loginCard.add(userButton);
+    panelAuth.add(loginCard, "LOGIN");
 
             // Construir la fila superior: izquierdo (botón), centro (título), derecho (auth)
             JPanel topPanel = new JPanel(new BorderLayout());
@@ -84,25 +103,6 @@ public class HeaderPanel extends JPanel {
 
             this.add(topPanel, BorderLayout.NORTH);
 
-            // Fila inferior: panel centrado con el texto y la cuenta atrás
-            bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 4));
-            bottomPanel.setOpaque(false);
-
-            lblExpiraTexto = new JLabel("La sesión expira en:");
-            lblExpiraTexto.setForeground(Color.WHITE);
-            lblExpiraTexto.setFont(new Font("Arial", Font.PLAIN, 13));
-            lblExpiraTexto.setVisible(true);
-            bottomPanel.add(lblExpiraTexto);
-
-            lblCuentaAtras = new JLabel("01:00:00");
-            lblCuentaAtras.setForeground(Color.WHITE);
-            lblCuentaAtras.setFont(new Font("Arial", Font.BOLD, 13));
-            lblCuentaAtras.setVisible(true);
-            bottomPanel.add(lblCuentaAtras);
-
-            // Por defecto visible
-            bottomPanel.setVisible(true);
-            this.add(bottomPanel, BorderLayout.SOUTH);
         actualizarVistaLogin(null);
     }
 
@@ -115,8 +115,7 @@ public class HeaderPanel extends JPanel {
 
     // Mostrar u ocultar el contador
     public void mostrarCuentaAtras(boolean visible) {
-        if (lblCuentaAtras != null) lblCuentaAtras.setVisible(visible);
-        if (lblExpiraTexto != null) lblExpiraTexto.setVisible(visible);
+        if (sessionPanel != null) sessionPanel.setVisible(visible);
     }
 
     public void configurarBotonNavegacion(boolean esMenuPrincipal) {
