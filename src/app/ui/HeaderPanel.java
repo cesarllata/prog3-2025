@@ -19,6 +19,7 @@ public class HeaderPanel extends JPanel {
     private UserSidePanel userSidePanel;
     private JLabel lblCuentaAtras;
     private JLabel lblExpiraTexto;
+        private JPanel bottomPanel;
 
     public HeaderPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
@@ -59,28 +60,49 @@ public class HeaderPanel extends JPanel {
         userButton.addActionListener(ae -> toggleUserSidePanel());
         panelAuth.add(userButton, "LOGIN");
 
-        // Añadimos un margen derecho para que no pegue con el borde de la ventana
-        JPanel wrapperRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
-        wrapperRight.setOpaque(false);
-        // Texto previo a la cuenta atrás
-        lblExpiraTexto = new JLabel("La sesión expira en:");
-        lblExpiraTexto.setForeground(Color.WHITE);
-        lblExpiraTexto.setFont(new Font("Arial", Font.PLAIN, 14));
-        lblExpiraTexto.setVisible(true);
-        lblExpiraTexto.setPreferredSize(new Dimension(160, 40));
-        wrapperRight.add(lblExpiraTexto);
+            // Construir la fila superior: izquierdo (botón), centro (título), derecho (auth)
+            JPanel topPanel = new JPanel(new BorderLayout());
+            topPanel.setOpaque(false);
 
-        // Label de cuenta atrás
-        lblCuentaAtras = new JLabel("01:00:00");
-        lblCuentaAtras.setForeground(Color.WHITE);
-        lblCuentaAtras.setFont(new Font("Arial", Font.BOLD, 14));
-        // Mostrar por defecto para que sea visible en la pantalla de inicio
-        lblCuentaAtras.setVisible(true);
-        lblCuentaAtras.setPreferredSize(new Dimension(100, 40));
-        wrapperRight.add(lblCuentaAtras);
-    wrapperRight.add(panelAuth);
-        
-        this.add(wrapperRight, BorderLayout.EAST);
+            // Ajustar botón izquierdo dentro de un wrapper para controlar márgenes
+            JPanel leftWrapper = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 18));
+            leftWrapper.setOpaque(false);
+            leftWrapper.add(btnNavegacion);
+            topPanel.add(leftWrapper, BorderLayout.WEST);
+
+            // Título central (lo dejamos centrado en su propio wrapper)
+            JPanel centerWrapper = new JPanel(new BorderLayout());
+            centerWrapper.setOpaque(false);
+            centerWrapper.add(lblEmpresa, BorderLayout.CENTER);
+            topPanel.add(centerWrapper, BorderLayout.CENTER);
+
+            // Panel derecho (auth)
+            JPanel rightWrapper = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+            rightWrapper.setOpaque(false);
+            rightWrapper.add(panelAuth);
+            topPanel.add(rightWrapper, BorderLayout.EAST);
+
+            this.add(topPanel, BorderLayout.NORTH);
+
+            // Fila inferior: panel centrado con el texto y la cuenta atrás
+            bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 4));
+            bottomPanel.setOpaque(false);
+
+            lblExpiraTexto = new JLabel("La sesión expira en:");
+            lblExpiraTexto.setForeground(Color.WHITE);
+            lblExpiraTexto.setFont(new Font("Arial", Font.PLAIN, 13));
+            lblExpiraTexto.setVisible(true);
+            bottomPanel.add(lblExpiraTexto);
+
+            lblCuentaAtras = new JLabel("01:00:00");
+            lblCuentaAtras.setForeground(Color.WHITE);
+            lblCuentaAtras.setFont(new Font("Arial", Font.BOLD, 13));
+            lblCuentaAtras.setVisible(true);
+            bottomPanel.add(lblCuentaAtras);
+
+            // Por defecto visible
+            bottomPanel.setVisible(true);
+            this.add(bottomPanel, BorderLayout.SOUTH);
         actualizarVistaLogin(null);
     }
 
