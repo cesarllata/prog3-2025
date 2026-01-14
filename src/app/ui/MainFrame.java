@@ -12,7 +12,7 @@ public class MainFrame extends JFrame {
     private HeaderPanel headerPanel;
     private app.models.Usuario usuarioActual;
     private String panelActual;
-    private app.SessionTimer sessionTimer;
+        private SessionTimer sessionTimer;
     
     // Necesitamos referencia a este panel para cambiar pestañas
     private PerfilUsuarioPanel perfilPanel;
@@ -56,12 +56,6 @@ public class MainFrame extends JFrame {
         this.usuarioActual = null;
         mostrarPanel("MENU");
 
-        // Iniciar temporizador de sesión al arrancar la aplicación (modo prueba: 15s)
-        if (sessionTimer == null) {
-            // Duración en segundos: 3600 = 1 hora
-            sessionTimer = new app.SessionTimer(this, 3600);
-        }
-        sessionTimer.start();
         // Mostrar la cuenta atrás solo cuando haya sesión iniciada
         headerPanel.mostrarCuentaAtras(false);
     }
@@ -112,6 +106,13 @@ public class MainFrame extends JFrame {
         headerPanel.actualizarVistaLogin(usuario);
         mostrarPanel("MENU");
         // Nota: el temporizador ya arranca al iniciar la app (o al crear MainFrame)
+        // Iniciar temporizador en el momento del login para que la cuenta empiece en 1 hora
+        if (sessionTimer == null) {
+            sessionTimer = new SessionTimer(this, 3600);
+        } else {
+            sessionTimer.reset();
+        }
+        sessionTimer.start();
         headerPanel.mostrarCuentaAtras(true);
     }
 

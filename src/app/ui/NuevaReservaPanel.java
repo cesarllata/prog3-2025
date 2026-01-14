@@ -4,7 +4,7 @@ import app.dao.UsuarioDAO;
 import app.models.Usuario;
 import app.models.Ruta;
 import app.logic.BuscadorRecursivo;
-import app.logic.GestorRutas; 
+import app.ui.GestorRutas;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
