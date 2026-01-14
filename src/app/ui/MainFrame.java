@@ -56,8 +56,11 @@ public class MainFrame extends JFrame {
         this.usuarioActual = null;
         mostrarPanel("MENU");
 
-        // Mostrar la cuenta atrás solo cuando haya sesión iniciada
-        headerPanel.mostrarCuentaAtras(false);
+        // Iniciar temporizador desde el arranque y mostrar el contador
+        if (sessionTimer == null) {
+            sessionTimer = new SessionTimer(this, 3600);
+        }
+        sessionTimer.start();
     }
 
     // MÉTODO NUEVO: Muestra el perfil y selecciona la pestaña correcta
@@ -105,6 +108,7 @@ public class MainFrame extends JFrame {
         this.usuarioActual = usuario;
         headerPanel.actualizarVistaLogin(usuario);
         mostrarPanel("MENU");
+        // loginExitoso: el temporizador ya está corriendo desde el inicio; si existe, resetearlo
         // Nota: el temporizador ya arranca al iniciar la app (o al crear MainFrame)
         // Iniciar temporizador en el momento del login para que la cuenta empiece en 1 hora
         if (sessionTimer == null) {

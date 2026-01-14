@@ -23,8 +23,9 @@ public class HeaderPanel extends JPanel {
 
     public HeaderPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
-        this.setLayout(new BorderLayout());
-        this.setPreferredSize(new Dimension(0, 80));
+    this.setLayout(new BorderLayout());
+    // Aumentamos la altura para permitir mostrar la fila inferior con el contador
+    this.setPreferredSize(new Dimension(0, 100));
         this.setBackground(new Color(0, 70, 140));
 
         // Botón Izquierdo
@@ -101,7 +102,7 @@ public class HeaderPanel extends JPanel {
         lblCuentaAtras.setFont(new Font("Arial", Font.BOLD, 13));
         bottomPanel.add(lblCuentaAtras);
 
-        bottomPanel.setVisible(false); // se mostrará al hacer login
+    bottomPanel.setVisible(true); // mostrar desde el inicio
         this.add(bottomPanel, BorderLayout.SOUTH);
 
         actualizarVistaLogin(null);
@@ -117,6 +118,9 @@ public class HeaderPanel extends JPanel {
     // Mostrar u ocultar el contador
     public void mostrarCuentaAtras(boolean visible) {
         if (bottomPanel != null) bottomPanel.setVisible(visible);
+        // Forzar re-layout y repaint para asegurar que se muestra correctamente
+        this.revalidate();
+        this.repaint();
     }
 
     public void configurarBotonNavegacion(boolean esMenuPrincipal) {

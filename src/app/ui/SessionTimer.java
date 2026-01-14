@@ -53,6 +53,8 @@ public class SessionTimer {
                 long mins = (secondsLeft % 3600) / 60;
                 long secs = secondsLeft % 60;
                 String text = String.format("%02d:%02d:%02d", hours, mins, secs);
+                // DEBUG: imprimir actualización en consola para verificar que el hilo corre
+                System.out.println("DEBUG: timer update: " + text);
                 // Actualizar label en EDT
                 SwingUtilities.invokeLater(() -> {
                     if (mainFrame != null) mainFrame.actualizarCuentaAtras(text);
