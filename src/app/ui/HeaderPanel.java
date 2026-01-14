@@ -17,6 +17,8 @@ public class HeaderPanel extends JPanel {
     private JButton btnLogin;
     private UserButton userButton;
     private UserSidePanel userSidePanel;
+    private JLabel lblCuentaAtras;
+    private JLabel lblExpiraTexto;
 
     public HeaderPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
@@ -60,10 +62,39 @@ public class HeaderPanel extends JPanel {
         // Añadimos un margen derecho para que no pegue con el borde de la ventana
         JPanel wrapperRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         wrapperRight.setOpaque(false);
-        wrapperRight.add(panelAuth);
+        // Texto previo a la cuenta atrás
+        lblExpiraTexto = new JLabel("La sesión expira en:");
+        lblExpiraTexto.setForeground(Color.WHITE);
+        lblExpiraTexto.setFont(new Font("Arial", Font.PLAIN, 14));
+        lblExpiraTexto.setVisible(true);
+        lblExpiraTexto.setPreferredSize(new Dimension(160, 40));
+        wrapperRight.add(lblExpiraTexto);
+
+        // Label de cuenta atrás
+        lblCuentaAtras = new JLabel("01:00:00");
+        lblCuentaAtras.setForeground(Color.WHITE);
+        lblCuentaAtras.setFont(new Font("Arial", Font.BOLD, 14));
+        // Mostrar por defecto para que sea visible en la pantalla de inicio
+        lblCuentaAtras.setVisible(true);
+        lblCuentaAtras.setPreferredSize(new Dimension(100, 40));
+        wrapperRight.add(lblCuentaAtras);
+    wrapperRight.add(panelAuth);
         
         this.add(wrapperRight, BorderLayout.EAST);
         actualizarVistaLogin(null);
+    }
+
+    // Método público para que MainFrame actualice el texto del contador
+    public void actualizarCuentaAtras(String texto) {
+        if (lblCuentaAtras != null) {
+            lblCuentaAtras.setText(texto);
+        }
+    }
+
+    // Mostrar u ocultar el contador
+    public void mostrarCuentaAtras(boolean visible) {
+        if (lblCuentaAtras != null) lblCuentaAtras.setVisible(visible);
+        if (lblExpiraTexto != null) lblExpiraTexto.setVisible(visible);
     }
 
     public void configurarBotonNavegacion(boolean esMenuPrincipal) {

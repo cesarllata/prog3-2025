@@ -12,6 +12,7 @@ public class MainFrame extends JFrame {
     private HeaderPanel headerPanel;
     private app.models.Usuario usuarioActual;
     private String panelActual;
+    private app.SessionTimer sessionTimer;
     
     // Necesitamos referencia a este panel para cambiar pestañas
     private PerfilUsuarioPanel perfilPanel;
@@ -54,6 +55,14 @@ public class MainFrame extends JFrame {
 
         this.usuarioActual = null;
         mostrarPanel("MENU");
+
+        // Iniciar temporizador de sesión al arrancar la aplicación (modo prueba: 15s)
+        if (sessionTimer == null) {
+            // Duración en segundos: 3600 = 1 hora
+            sessionTimer = new app.SessionTimer(this, 3600);
+        }
+        sessionTimer.start();
+        headerPanel.mostrarCuentaAtras(true);
     }
 
     // MÉTODO NUEVO: Muestra el perfil y selecciona la pestaña correcta
@@ -101,6 +110,7 @@ public class MainFrame extends JFrame {
         this.usuarioActual = usuario;
         headerPanel.actualizarVistaLogin(usuario);
         mostrarPanel("MENU");
+        // Nota: el temporizador ya arranca al iniciar la app (o al crear MainFrame)
     }
 
     public void actualizarSaldoHeader() {
@@ -114,6 +124,21 @@ public class MainFrame extends JFrame {
         headerPanel.actualizarVistaLogin(null);
         JOptionPane.showMessageDialog(this, "Sesión cerrada.", "Logout", JOptionPane.INFORMATION_MESSAGE);
         mostrarPanel("MENU");
+        // Detener temporizador y ocultar contador
+        if (sessionTimer != null) {
+            sessionTimer.stopTimer();
+            sessionTimer = null;
+        }
+        headerPanel.mostrarCuentaAtras(false);
+    }
+
+    // Método que permite a SessionTimer actualizar el label en el header
+    public void actualizarCuentaAtras(String texto) {
+        if (headerPanel != null) headerPanel.actualizarCuentaAtras(texto);
+    }
+
+    public void mostrarCuentaAtras(boolean visible) {
+        if (headerPanel != null) headerPanel.mostrarCuentaAtras(visible);
     }
 
     public void solicitarSalirApp() {
